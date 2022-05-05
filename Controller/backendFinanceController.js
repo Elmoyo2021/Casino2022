@@ -21,7 +21,7 @@ const financeController = {
         });
 
     },
-    depositListRemark: async (req, res) => {
+    depositListRemark: async (req, res) => { //備註
         const errors = validationResult(req)
         if (!errors.isEmpty()) {//是否有正確填寫欄位值
             const error_msg = errorMessage(errors)//取得錯誤訊息

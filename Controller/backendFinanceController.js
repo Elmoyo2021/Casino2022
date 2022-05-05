@@ -52,6 +52,81 @@ const financeController = {
 
 
     },
+    depositMember: async (req, res) => {//存款請求明細_個人
+        const checkOrder = await checkDepositId(req.query.id)
+        if (checkOrder.length <= 0) {
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "失敗，id有誤"
+            });
+        }
+        const membersData = await checkMembers(checkOrder[0].member_id)
+        const MembersData={
+            deposit_id:checkOrder[0].postscript,
+            members_CraateTime:membersData[0].Createtime,
+            account:membersData[0].account,
+            first_deposit:false,
+            name:membersData[0].name,
+            auditors:checkOrder[0].auditors,
+            hierarchy:membersData[0].hierarchy_detail,
+            auditors_time:checkOrder[0].auditors_time
+        }
+        const deposiDetail={
+            //pay_type:"公司入帳",
+            bank:checkOrder[0].bank,
+            deposit_type:checkOrder[0].deposit_type,
+            deposit_time:checkOrder[0].deposit_time,
+            amount:checkOrder[0].amount,
+            submit_time:checkOrder[0].Createtime,
+            ip:checkOrder[0].ip,
+            depoit_name:checkOrder[0].depoit_name,
+            status:checkOrder[0].status
+        }
+        const receivingAccount={
+            bank:checkOrder[0].bank,
+            bank_account:checkOrder[0].bank_account,
+            bank_branch:checkOrder[0].bank_branch,
+            bank_account_name:checkOrder[0].bank_account_name
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "成功",
+            data: {
+                memberData:MembersData,
+                deposiDetail:deposiDetail,
+                receivingAccount:receivingAccount
+            }
+        });
+
+    },
+    depositData: async (req, res) => {
+        const checkOrder = await checkDepositId(req.query.id)
+        if (checkOrder.length <= 0) {
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "失敗，id有誤"
+            });
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "成功",
+            data: {
+                bank:checkOrder[0].bank,
+                bank_account_name:checkOrder[0].bank_account_name,
+                bank_account:checkOrder[0].bank_account,
+                bank_branch:checkOrder[0].bank_branch,
+            }
+        });
+
+    },
+    depositLimitList:async(req,res)=>{
+        const depositLimitLists = await depositLimitList(req.query.deposit_group)
+        return res.json({//回傳成功
+            code: 200,
+            msg: "成功",
+            data: depositLimitLists
+        });
+    },
     withdrawList: async (req, res) => {
         const conditionData = pagination(req) //分頁設定
         const withdrawLists = await withdrawList(conditionData)//呼叫會員列表 傳入排序分頁等設定
@@ -629,12 +704,29 @@ function depositListTotal(data) {
     return dataList
 }
 
-
+function checkDepositId(data) {
+    let sql = "select * from deposit_order where id=?"
+    let dataList = query(sql, [data])
+    return dataList
+}
+function checkMembers(data) {
+    let sql = "select a.account,a.name,a.Createtime,b.name as hierarchy_detail from members a left join hierarchy_detail b on a.hierarchy_detail_id=b.id where a.id=?"
+    let dataList = query(sql, [data])
+    return dataList
+}
 function withdrawList(data) {
     let sql = 'SELECT a.id,a.Createtime,d.name as agency_team,c.name as hierarchy,b.account,b.name,b.tags,e.bank,e.account as bank_account,e.name as bank_name,a.amount as withdraw_amount,a.status,a.bonus_status,a.normal_status,a.actual_amount,a.withdraw_way,a.ip from withdraw_order a left join members b on a.member_id=b.id left join hierarchy_detail c on b.hierarchy_detail_id=c.id left join agency_team d on b.agency_team_id=d.id left join members_card e on b.id=e.member_id order by a.' + data.orderBy + ' ' + data.order + ' limit ?,?'
     let dataList = query(sql, [Number(data.skip), Number(data.limit)])
     return dataList
 }
+
+
+function depositLimitList(data) {
+    let sql = 'SELECT * from deposit_limit where deposit_group=?'
+    let dataList = query(sql,[data])
+    return dataList
+}
+
 
 function withdrawListTotal(data) {
     let sql = 'SELECT count(*) as total from withdraw_order a left join members b on a.member_id=b.id '

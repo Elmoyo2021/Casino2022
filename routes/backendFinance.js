@@ -16,6 +16,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 router.get('/depositList', backendFinanceController.depositList);//存款記錄列表
+
+router.get('/depositMember', backendFinanceController.depositMember);//存款請求明細_個人
+router.get('/depositData', backendFinanceController.depositData);//存款資訊
+router.get('/depositLimitList', backendFinanceController.depositLimitList);//存款限制時限
+
 router.post('/depositListRemark', backendFinanceController.depositListRemark);//存款記錄列表 前台備註更新
 router.get('/withdrawList', backendFinanceController.withdrawList);//取款記錄列表
 router.get('/depositInfo', backendFinanceController.depositInfo);//存款方式設定
@@ -68,6 +73,7 @@ router.post('/third_platformAdd', [//第三方平台 新增
 ], backendFinanceController.thirdPlatformAdd);//三方平台新增
 
 
+router.get('/thirdPlatform', backendFinanceController.thirdPlatform);//銀行列表
 /*
 router.post('/members_add', [//會員列表 新增
     check('account', '帳號必須填寫')

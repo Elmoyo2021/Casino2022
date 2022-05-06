@@ -24,6 +24,8 @@ router.get('/depositLimitList', backendFinanceController.depositLimitList);//存
 router.post('/depositListRemark', backendFinanceController.depositListRemark);//存款記錄列表 前台備註更新
 router.get('/withdrawList', backendFinanceController.withdrawList);//取款記錄列表
 router.get('/depositInfo', backendFinanceController.depositInfo);//存款方式設定
+router.post('/depositInfoUpdateContent', backendFinanceController.depositInfoUpdateContent);//存款方式設定
+
 router.post('/depositInfoUpdate', [
     check('id', 'id必須填寫')
         .isLength({ min: 1 }),

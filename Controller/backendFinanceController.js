@@ -185,6 +185,119 @@ const financeController = {
             data: withdrawRts
         });
     },
+    depositInfo: async function (req, res) {
+        const depositInfos = await selectDepositInfo()
+        return res.json({//回傳失敗訊息
+            code: 200,
+            msg: "搜尋成功",
+            data: depositInfos
+        });
+
+    },
+    depositInfoUpdate: async (req, res) => {//存款方式設定 標題更新
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {//是否有正確填寫欄位值
+            const error_msg = errorMessage(errors)//取得錯誤訊息
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "審核失敗",
+                data: error_msg
+            });
+        }
+        const checkOrder = await checkDepositInfo(req.body.id)
+        if (checkOrder.length <= 0) {
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "更新失敗，id有誤"
+            });
+        }
+        const data = {
+            title: req.body.title,
+            title_en: req.body.title_en,
+            title_vn: req.body.title_vn
+        }
+        await updateDepositInfo(data, req.body.id)
+        const DepositInfoRts = await checkDepositInfo(req.body.id)
+        return res.json({//回傳成功
+            code: 200,
+            msg: "更新成功",
+            data: DepositInfoRts
+        });
+    },
+    depositInfoUpdateContent: async (req, res) => {//存款方式設定 描述更新
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {//是否有正確填寫欄位值
+            const error_msg = errorMessage(errors)//取得錯誤訊息
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "審核失敗",
+                data: error_msg
+            });
+        }
+        const checkOrder = await checkDepositInfo(req.body.id)
+        if (checkOrder.length <= 0) {
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "更新失敗，id有誤"
+            });
+        }
+        const data = {
+            content: req.body.content,
+            content_en: req.body.content_en,
+            content_vn: req.body.content_vn
+        }
+        await updateDepositInfo(data, req.body.id)
+        const DepositInfoRts = await checkDepositInfo(req.body.id)
+        return res.json({//回傳成功
+            code: 200,
+            msg: "更新成功",
+            data: DepositInfoRts
+        });
+    },
+    depositPages: async (req, res) => {//存款頁面設定
+        const depositPagesListGroups = await depositPagesListGroup()
+        var dataRt = []
+        for (i = 0; i < depositPagesListGroups.length; i++) {
+            depositPagesLists = await depositPagesList(depositPagesListGroups[i].bank)
+            dataRt.push({ Type: depositPagesListGroups[i].bank, data: depositPagesLists })
+        }
+        return res.json({//回傳
+            code: 200,
+            msg: "查詢成功",
+            data: dataRt
+        })
+    },
+    depositPagesUpdate: async (req, res) => {//存款頁面設定 更新
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {//是否有正確填寫欄位值
+            const error_msg = errorMessage(errors)//取得錯誤訊息
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "審核失敗",
+                data: error_msg
+            });
+        }
+        const checkOrder = await checkDepositPages(req.body.id)
+        if (checkOrder.length <= 0) {
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "更新失敗，id有誤"
+            });
+        }
+        const data = {
+            display_state: req.body.display_state,
+            required: req.body.required,
+            message: req.body.message,
+            other_set: req.body.other_set
+        }
+        await updateDepositPages(data, req.body.id)
+        const dataRt = await checkDepositPages(req.body.id)
+        return res.json({//回傳
+            code: 200,
+            msg: "更新成功",
+            data: dataRt
+        })
+    },
     financeAccountAdd: async (req, res) => {//公司出入款列表
         const errors = validationResult(req)
         if (!errors.isEmpty()) {//是否有正確填寫欄位值
@@ -329,6 +442,7 @@ const financeController = {
                 img: filesName,
                 url: req.body.url
             }
+            console.log("InsertData",Data)
             const bankListAdd = await bankListInsert(Data)//寫入資料庫
             const bankListRt = await bankListsInsertRt(bankListAdd.insertId)//回傳成功表
             let newPath = `uploads/finance/${filesName}`//儲存位置
@@ -720,6 +834,63 @@ function thirdPlatformInsertRt(data) {//查看third_platform
 function getRandom(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
+
+
+function checkIPList(data) {//查看是否為黑名單
+    let sql = 'SELECT * FROM `whitelist` where ip=? and status="refuse"'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+function selectDepositInfo(data) {//查看是否為黑名單
+    let sql = 'SELECT * FROM `deposit_info` order by id ASC'
+    let dataList = query(sql)
+    return dataList
+}
+
+function updateDepositInfo(data, id) {//更新存款方式設定
+    let sql = 'update `deposit_info` set ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+function checkDepositListRemark(data) {
+    let sql = 'SELECT * FROM `deposit_order` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function updateDepositListRemark(data, id) {
+    let sql = 'update `deposit_order` set ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+function checkDepositInfo(data) {//存款方式設定確認
+    let sql = 'SELECT * FROM `deposit_info` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function depositPagesListGroup() {
+    let sql = 'SELECT * FROM `deposit_pages` group by bank order by id ASC'
+    let dataList = query(sql)
+    return dataList
+}
+function depositPagesList(data) {
+    let sql = 'SELECT * FROM `deposit_pages` where bank=? order by id ASC'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function updateDepositPages(data, id) {//更新存款方式設定
+    let sql = 'update `deposit_pages` set ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+function checkDepositPages(data) {
+    let sql = 'SELECT * FROM `deposit_pages` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
 
 function selectMembers(data) {
     let sql = 'SELECT * FROM `members` where id=?'

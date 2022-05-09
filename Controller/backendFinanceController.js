@@ -61,40 +61,40 @@ const financeController = {
             });
         }
         const membersData = await checkMembers(checkOrder[0].member_id)
-        const MembersData={
-            deposit_id:checkOrder[0].postscript,
-            members_CraateTime:membersData[0].Createtime,
-            account:membersData[0].account,
-            first_deposit:false,
-            name:membersData[0].name,
-            auditors:checkOrder[0].auditors,
-            hierarchy:membersData[0].hierarchy_detail,
-            auditors_time:checkOrder[0].auditors_time
+        const MembersData = {
+            deposit_id: checkOrder[0].postscript,
+            members_CraateTime: membersData[0].Createtime,
+            account: membersData[0].account,
+            first_deposit: false,
+            name: membersData[0].name,
+            auditors: checkOrder[0].auditors,
+            hierarchy: membersData[0].hierarchy_detail,
+            auditors_time: checkOrder[0].auditors_time
         }
-        const deposiDetail={
+        const deposiDetail = {
             //pay_type:"公司入帳",
-            bank:checkOrder[0].bank,
-            deposit_type:checkOrder[0].deposit_type,
-            deposit_time:checkOrder[0].deposit_time,
-            amount:checkOrder[0].amount,
-            submit_time:checkOrder[0].Createtime,
-            ip:checkOrder[0].ip,
-            depoit_name:checkOrder[0].depoit_name,
-            status:checkOrder[0].status
+            bank: checkOrder[0].bank,
+            deposit_type: checkOrder[0].deposit_type,
+            deposit_time: checkOrder[0].deposit_time,
+            amount: checkOrder[0].amount,
+            submit_time: checkOrder[0].Createtime,
+            ip: checkOrder[0].ip,
+            depoit_name: checkOrder[0].depoit_name,
+            status: checkOrder[0].status
         }
-        const receivingAccount={
-            bank:checkOrder[0].bank,
-            bank_account:checkOrder[0].bank_account,
-            bank_branch:checkOrder[0].bank_branch,
-            bank_account_name:checkOrder[0].bank_account_name
+        const receivingAccount = {
+            bank: checkOrder[0].bank,
+            bank_account: checkOrder[0].bank_account,
+            bank_branch: checkOrder[0].bank_branch,
+            bank_account_name: checkOrder[0].bank_account_name
         }
         return res.json({//回傳成功
             code: 200,
             msg: "成功",
             data: {
-                memberData:MembersData,
-                deposiDetail:deposiDetail,
-                receivingAccount:receivingAccount
+                memberData: MembersData,
+                deposiDetail: deposiDetail,
+                receivingAccount: receivingAccount
             }
         });
 
@@ -111,15 +111,15 @@ const financeController = {
             code: 200,
             msg: "成功",
             data: {
-                bank:checkOrder[0].bank,
-                bank_account_name:checkOrder[0].bank_account_name,
-                bank_account:checkOrder[0].bank_account,
-                bank_branch:checkOrder[0].bank_branch,
+                bank: checkOrder[0].bank,
+                bank_account_name: checkOrder[0].bank_account_name,
+                bank_account: checkOrder[0].bank_account,
+                bank_branch: checkOrder[0].bank_branch,
             }
         });
 
     },
-    depositLimitList:async(req,res)=>{
+    depositLimitList: async (req, res) => {
         const depositLimitLists = await depositLimitList(req.query.deposit_group)
         return res.json({//回傳成功
             code: 200,
@@ -442,7 +442,7 @@ const financeController = {
                 img: filesName,
                 url: req.body.url
             }
-            console.log("InsertData",Data)
+            console.log("InsertData", Data)
             const bankListAdd = await bankListInsert(Data)//寫入資料庫
             const bankListRt = await bankListsInsertRt(bankListAdd.insertId)//回傳成功表
             let newPath = `uploads/finance/${filesName}`//儲存位置
@@ -450,6 +450,57 @@ const financeController = {
                 //  console.log('image uploaded successful')
             })
             fs.unlink(req.file.path, error => { }); // 刪除暫存檔
+            return res.json({//回傳成功
+                code: 200,
+                msg: "新增成功",
+                data: bankListRt
+            });
+        }//檢查是否正確欄位填寫END
+
+    },
+    bankListUpdate: async (req, res) => {//銀行列表更新
+        const checkbankList = await bankListsInsertRt(req.body.id)
+        if (checkbankList.length <= 0) {
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "失敗，id有誤"
+            });
+        }
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {//是否有正確填寫欄位值
+            const error_msg = errorMessage(errors)//取得錯誤訊息
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "失敗",
+                data: error_msg
+            });
+        } else {
+            //判斷檔案是否具有副檔名
+
+            const Data = {
+                bank_type: req.body.bank_type,
+                bank: req.body.bank,
+                bank_cn: req.body.bank_cn,
+                bank_preset: req.body.bank_preset,
+                url: req.body.url
+            }
+            if (req.file) {
+                if (req.file.originalname.lastIndexOf(".") != -1) {
+                    extName = req.file.originalname.slice(req.file.originalname.lastIndexOf("."));//取得副檔名
+                }
+                const filesName = "bankImg" + moment().format('YYYYMMDD_hhmmss') + "_" + getRandom(11111, 99999) + extName;
+                Data.img=filesName
+            }
+            await bankListUpdate(Data, req.body.id)//更新資料庫
+            const bankListRt = await bankListsInsertRt(req.body.id)//回傳成功表
+            if (req.file) {
+                let newPath = `uploads/finance/${Data.img}`//儲存位置
+                fs.rename(req.file.path, newPath, () => {//上傳圖片
+                    //  console.log('image uploaded successful')
+                })
+                fs.unlink(req.file.path, error => { }); // 刪除暫存檔
+            }
+
             return res.json({//回傳成功
                 code: 200,
                 msg: "新增成功",
@@ -724,7 +775,7 @@ function withdrawList(data) {
 
 function depositLimitList(data) {
     let sql = 'SELECT * from deposit_limit where depostit_group=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 
@@ -798,6 +849,11 @@ function bankListsInsertRt(data) {//查看finance_account
 }
 
 
+function bankListUpdate(data, id) {//更新 finance_bank 資料庫
+    let sql = 'update finance_bank SET ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
 
 
 

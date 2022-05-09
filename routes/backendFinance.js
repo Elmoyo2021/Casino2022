@@ -67,8 +67,20 @@ router.post('/bankListAdd', upload.single('img'), [//銀行列表 新增
         .isLength({ min: 1 }),
     check('url', '網銀網址必須填寫')
         .isLength({ min: 1 }),
-], backendFinanceController.bankListAdd);//公司出入款帳戶
-router.get('/thirdPlatform', backendFinanceController.thirdPlatform);//銀行列表
+], backendFinanceController.bankListAdd);
+router.post('/bankListUpdate',upload.single('img'), [//銀行列表 更新
+    check('bank_type', '銀行類型必須填寫')
+        .isLength({ min: 1 }),
+    check('bank', '銀行名稱必須填寫')
+        .isLength({ min: 1 }),
+    check('bank_cn', '簡中名稱必須填寫')
+        .isLength({ min: 1 }),
+    check('bank_preset', '預設語系名稱必須填寫')
+        .isLength({ min: 1 }),
+    check('url', '網銀網址必須填寫')
+        .isLength({ min: 1 }),
+], backendFinanceController.bankListUpdate);
+router.get('/thirdPlatform', backendFinanceController.thirdPlatform);//第三方平台
 router.post('/third_platformAdd', [//第三方平台 新增
     check('title', '銀行類型必須填寫')
         .isLength({ min: 1 }),

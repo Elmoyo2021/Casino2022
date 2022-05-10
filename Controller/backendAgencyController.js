@@ -261,7 +261,7 @@ const AgencyController = {
 
     },
     agencyReport: async (req, res) => {
-        /*
+        
         const agencyLists = await agencyReportList()
         let finalRt={}
         let agencyListInsert={}
@@ -278,7 +278,7 @@ const AgencyController = {
             code: 200,
             msg: "修改成功",
             data: agencyLists
-        });*/
+        });
         
     }
 
@@ -390,6 +390,234 @@ function agencyTeamInsertRt(data) {//查看agency_list
 }
 function selectPoint(data) {//查看現有點數
     let sql = 'SELECT point FROM `agency_team` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+//XXXXXXXXXXXXXXXXXXXXXXXXX
+function checkWithdraw(data) {
+    let sql = "select * from withdraw_order where id=? and status='pending'"
+    let dataList = query(sql, [data])
+    return dataList
+}
+function checkWithdrawRt(data) {
+    let sql = "select * from withdraw_order where id=? "
+    let dataList = query(sql, [data])
+    return dataList
+}
+function updateWithdraw(data) {
+    let sql = "update withdraw_order set status=?,actual_amount=? where id=?"
+    let dataList = query(sql, [data.status, data.actual_amount, data.id])
+    return dataList
+}
+
+
+
+function depositList(data) {
+    let sql = 'SELECT a.id,a.Createtime,a.postscript,c.name,d.name,b.account,b.name,a.deposit_type,a.remark,a.amount,a.pay_amount,e.title as pay_info,a.status FROM deposit_order a left join members b on a.member_id=b.id left join agency_team c on b.agency_team_id=c.id left join hierarchy_detail d on b.hierarchy_detail_id=d.id left join third_platform e on a.aisle=e.id order by a.' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function depositListTotal(data) {
+    let sql = 'SELECT count(*) as total from deposit_order'
+    let dataList = query(sql)
+    return dataList
+}
+
+function checkDepositId(data) {
+    let sql = "select * from deposit_order where id=?"
+    let dataList = query(sql, [data])
+    return dataList
+}
+function checkMembers(data) {
+    let sql = "select a.account,a.name,a.Createtime,b.name as hierarchy_detail from members a left join hierarchy_detail b on a.hierarchy_detail_id=b.id where a.id=?"
+    let dataList = query(sql, [data])
+    return dataList
+}
+function withdrawList(data) {
+    let sql = 'SELECT a.id,a.Createtime,d.name as agency_team,c.name as hierarchy,b.account,b.name,b.tags,e.bank,e.account as bank_account,e.name as bank_name,a.amount as withdraw_amount,a.status,a.bonus_status,a.normal_status,a.actual_amount,a.withdraw_way,a.ip from withdraw_order a left join members b on a.member_id=b.id left join hierarchy_detail c on b.hierarchy_detail_id=c.id left join agency_team d on b.agency_team_id=d.id left join members_card e on b.id=e.member_id order by a.' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+
+function depositLimitList(data) {
+    let sql = 'SELECT * from deposit_limit where depostit_group=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+function withdrawListTotal(data) {
+    let sql = 'SELECT count(*) as total from withdraw_order a left join members b on a.member_id=b.id '
+    let dataList = query(sql)
+    return dataList
+}
+function financeAccount(data) {//出入款銀行列表
+    let sql = 'SELECT bank,title_cn,bank_type,account,currency,vip_level,deposit_max_day,deposit_max_total,status,dispensing_status,balance_min,remark FROM `finance_account` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function financeAccountTotal() {//出入款銀行列表總數
+    let sql = 'SELECT count(*) as total FROM `finance_account` '
+    let dataList = query(sql)
+    return dataList
+}
+
+
+function walletLog(data) {//錢包出入列表
+    let sql = 'SELECT * FROM `wallet_transfer_log` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function walletLogTotal() {//錢包出入總數
+    let sql = 'SELECT count(*) as total FROM `wallet_transfer_log` '
+    let dataList = query(sql)
+    return dataList
+}
+
+
+function bankList(data) {//銀行列表
+    let sql = 'SELECT * FROM `finance_bank` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function bankListTotal() {//銀行列表總數
+    let sql = 'SELECT count(*) as total FROM `finance_bank` '
+    let dataList = query(sql)
+    return dataList
+}
+
+function financeInsert(data) {//寫入finance_account資料庫
+    let sql = 'INSERT INTO finance_account SET ?'
+    let dataList = query(sql, data)
+    return dataList
+}
+function financesInsertRt(data) {//查看finance_account
+    let sql = 'SELECT * FROM `finance_account` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+
+
+function bankListInsert(data) {//寫入 finance_bank 資料庫
+    let sql = 'INSERT INTO finance_bank SET ?'
+    let dataList = query(sql, data)
+    return dataList
+}
+function bankListsInsertRt(data) {//查看finance_account
+    let sql = 'SELECT * FROM `finance_bank` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+function bankListUpdate(data, id) {//更新 finance_bank 資料庫
+    let sql = 'update finance_bank SET ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+
+
+
+function thirdPlatform(data) {//第三方平台列表
+    let sql = 'SELECT * FROM `third_platform` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function thirdPlatformTotal() {//第三方平台列表總數
+    let sql = 'SELECT count(*) as total FROM `third_platform` '
+    let dataList = query(sql)
+    return dataList
+}
+
+
+function thirdPlatformUpdate(data) {//寫入 third_platform 資料庫
+    let sql = 'INSERT INTO third_platform SET ?'
+    let dataList = query(sql, data)
+    return dataList
+}
+
+function thirdPlatformInsert(data) {//寫入 third_platform 資料庫
+    let sql = 'INSERT INTO third_platform SET ?'
+    let dataList = query(sql, data)
+    return dataList
+}
+function thirdPlatformInsertRt(data) {//查看third_platform
+    let sql = 'SELECT * FROM `third_platform` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function getRandom(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+
+
+function checkIPList(data) {//查看是否為黑名單
+    let sql = 'SELECT * FROM `whitelist` where ip=? and status="refuse"'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+function selectDepositInfo(data) {//查看是否為黑名單
+    let sql = 'SELECT * FROM `deposit_info` order by id ASC'
+    let dataList = query(sql)
+    return dataList
+}
+
+function updateDepositInfo(data, id) {//更新存款方式設定
+    let sql = 'update `deposit_info` set ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+function checkDepositListRemark(data) {
+    let sql = 'SELECT * FROM `deposit_order` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function updateDepositListRemark(data, id) {
+    let sql = 'update `deposit_order` set ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+function checkDepositInfo(data) {//存款方式設定確認
+    let sql = 'SELECT * FROM `deposit_info` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function depositPagesListGroup() {
+    let sql = 'SELECT * FROM `deposit_pages` group by bank order by id ASC'
+    let dataList = query(sql)
+    return dataList
+}
+function depositPagesList(data) {
+    let sql = 'SELECT * FROM `deposit_pages` where bank=? order by id ASC'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function updateDepositPages(data, id) {//更新存款方式設定
+    let sql = 'update `deposit_pages` set ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+function checkDepositPages(data) {
+    let sql = 'SELECT * FROM `deposit_pages` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function selectMembers(data) {
+    let sql = 'SELECT * FROM `members` where id=?'
     let dataList = query(sql, [data])
     return dataList
 }

@@ -55,7 +55,7 @@ const AgencyController = {
             });
         }//檢查是否正確欄位填寫END
 
-    }, 
+    },
     agencyListMemberAdd: async (req, res) => {//代理團隊 新增會員
 
         const Members = await checkMembers(req.body.account)//寫入資料庫
@@ -259,9 +259,116 @@ const AgencyController = {
             });
         }//檢查是否正確欄位填寫END
 
+    },
+    agencyReport: async (req, res) => {
+        /*
+        const agencyLists = await agencyReportList()
+        let finalRt={}
+        let agencyListInsert={}
+        for(i=0;i<agencyLists.length;i++){
+            agencyListInsert={
+                rank:agencyLists[i].rank,
+                account:agencyLists[i].account
+            }
+            finalRt.push(finalRt)
+            //console.log(agencyLists[i].account)
+        }
+        console.log(finalRt)
+        return res.json({//回傳成功
+            code: 200,
+            msg: "修改成功",
+            data: agencyLists
+        });*/
+
+        if (!errors.isEmpty()) {//是否有正確填寫欄位值
+            const error_msg = errorMessage(errors)//取得錯誤訊息
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "新增失敗",
+                data: error_msg
+            });
+        } else {
+            const Data = {
+                platform: req.body.platform,
+                title: req.body.title,
+                title_cn: req.body.title_cn,
+                title_vn: req.body.title_vn,
+                deposit_limit_day: req.body.deposit_limit_day,
+                deposit_limit_total: req.body.deposit_limit_total,
+                merchant_nunber: req.body.merchant_nunber,
+                merchant_key: req.body.merchant_key,
+                deposit_url: req.body.deposit_url,
+                withdrawal_url: req.body.withdrawal_url,
+                platform_type: req.body.platform_type,
+                currency: req.body.currency,
+                income_status: req.body.income_status,
+                hierarchy_detail_id: req.body.hierarchy_detail_id,
+                sug_money: req.body.sug_money,
+                momo_pay: req.body.momo_pay,
+                momo_deposit_min: req.body.momo_deposit_min,
+                momo_deposit_max: req.body.momo_deposit_max,
+                momo_handfee: req.body.momo_handfee,
+                momo_handfee2: req.body.momo_handfee2,
+                momo_thirdfee: req.body.momo_thirdfee,
+                momo_thirdfee2: req.body.momo_thirdfee2,
+                debit_card: req.body.debit_card,
+                debit_deposit_min: req.body.debit_deposit_min,
+                debit_deposit_max: req.body.debit_deposit_max,
+                debit_handfee: req.body.debit_handfee,
+                debit_handfee2: req.body.debit_handfee2,
+                debit_thirdfee: req.body.debit_thirdfee,
+                debit_thirdfee2: req.body.debit_thirdfee2,
+                bank_qr: req.body.bank_qr,
+                qr_deposit_min: req.body.qr_deposit_min,
+                qr_deposit_max: req.body.qr_deposit_max,
+                qr_handfee: req.body.qr_handfee,
+                qr_handfee2: req.body.qr_handfee2,
+                qr_thirdfee: req.body.qr_thirdfee,
+                qr_thirdfee2: req.body.qr_thirdfee2,
+                zalo_pay: req.body.zalo_pay,
+                zalo_deposit_min: req.body.zalo_deposit_min,
+                zalo_deposit_max: req.body.zalo_deposit_max,
+                zalo_handfee: req.body.zalo_handfee,
+                zalo_handfee2: req.body.zalo_handfee2,
+                zalo_thirdfee: req.body.zalo_thirdfee,
+                zalo_thirdfee2: req.body.zalo_thirdfee2,
+                viettel_pay: req.body.viettel_pay,
+                viettel_deposit_min: req.body.viettel_deposit_min,
+                viettel_deposit_max: req.body.viettel_deposit_max,
+                viettel_handfee: req.body.viettel_handfee,
+                viettel_handfee2: req.body.viettel_handfee2,
+                viettel_thirdfee: req.body.viettel_thirdfee,
+                viettel_thirdfee2: req.body.viettel_thirdfee2,
+                scratchcard: req.body.scratchcard,
+                payment_status: req.body.payment_status,
+                payment_cost: req.body.payment_cost,
+                payment_cost2: req.body.payment_cost2,
+                payment_min: req.body.payment_min,
+                payment_max: req.body.payment_max,
+                remark: req.body.remark,
+                Createtime: moment().format('YYYY-MM-DD HH:mm:ss'),
+                Updatetime: moment().format('YYYY-MM-DD HH:mm:ss'),
+                Updateuser: req.session.adminInfo
+            }
+            const thirdPlatforms = await thirdPlatformInsert(Data)//寫入資料庫
+            const thirdPlatformsRt = await thirdPlatformInsertRt(thirdPlatforms.insertId)//回傳成功表
+
+            return res.json({//回傳成功
+                code: 200,
+                msg: "新增成功",
+                data: thirdPlatformsRt
+            });
+        }//檢查是否正確欄位填寫END
     }
 
 
+}
+
+
+function agencyReportList(data) {//確認團隊帳號是否存在
+    let sql = 'SELECT * FROM `agency_team` '
+    let dataList = query(sql)
+    return dataList
 }
 
 

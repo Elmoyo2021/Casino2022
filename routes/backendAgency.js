@@ -13,6 +13,7 @@ router.post('/agencyList_updatePoint', backendAgencyController.agencyListUpdateP
 router.post('/agencyList_updateStatus', backendAgencyController.agencyListUpdateStatus);//代理團隊
 
 
+router.get('/agencyReport', backendAgencyController.agencyReport);//團隊報表
 /*
 router.post('/members_add', [//會員列表 新增
     check('account', '帳號必須填寫')

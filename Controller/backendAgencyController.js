@@ -261,35 +261,114 @@ const AgencyController = {
 
     },
     agencyReport: async (req, res) => {
-        
+
         const agencyLists = await agencyReportList()
-        let finalRt={}
-        let agencyListInsert={}
-        for(i=0;i<agencyLists.length;i++){
-            agencyListInsert={
-                rank:agencyLists[i].rank,
-                account:agencyLists[i].account
+        let finalRt = []
+        let agencyListInsert = {}
+        for (i = 0; i < agencyLists.length; i++) {
+            layer = await countLayer(agencyLists[i].id)
+            members_register = await countMembersRe(agencyLists[i].id)
+            members = await countMembers(agencyLists[i].id)
+            bets = await countBets(agencyLists[i].id)
+            profits = await countProfit(agencyLists[i].id)
+            deposits = await countDeposits(agencyLists[i].id)
+            depositMembers = await countDepositMembers(agencyLists[i].id)
+            depositAmounts = await countDepositAmounts(agencyLists[i].id)
+            withdrawalAmounts = await countWithdrawalAmounts(agencyLists[i].id)
+            betAmounts = await countBetAmounts(agencyLists[i].id)
+            betProfits = await countProfits(agencyLists[i].id)
+
+            agencyListInsert = {
+                rank: agencyLists[i].rank,
+                account: agencyLists[i].account,
+                layer_count: layer[0].total,//下線代理數
+                members_register_count: members_register[0].total,
+                members_count: members[0].total,
+                bet_total: bets[0].total,
+                deposit_total: deposits[0].total,
+                deposit_members_total: depositMembers[0].total,
+                deposit_amount: depositAmounts[0].total,
+                withdrawal_amount: withdrawalAmounts[0].total,
+                bet_amount: betAmounts[0].total,
+                bet_amount_efficient: betProfits[0].total,
+                profit: profits[0].total
             }
-            finalRt.push(finalRt)
+            finalRt.push(agencyListInsert)
             //console.log(agencyLists[i].account)
         }
         console.log(finalRt)
         return res.json({//回傳成功
             code: 200,
             msg: "成功",
-            data: agencyLifinalRtsts
+            data: finalRt
         });
     }
 
 
 }
 
-
-function agencyReportList(data) {//確認團隊帳號是否存在
+function countLayer(data) {
+    let sql = 'SELECT count(*) as total FROM `agency_team` where layer_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function agencyReportList(data) {//
     let sql = 'SELECT * FROM `agency_team` '
     let dataList = query(sql)
     return dataList
 }
+function countMembersRe(data) {//
+    let sql = 'SELECT count(*) as total FROM `members` where agency_team_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function countMembers(data) {//
+    let sql = 'SELECT count(*) as total FROM `members` where agency_team_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function countBets(data) {//
+    let sql = 'select count(*) as total from (SELECT a.member_id,b.agency_team_id FROM `baccarat_bet`  a left join members b on a.member_id=b.id where b.agency_team_id=? group by member_id) as a'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function countBetAmounts(data) {//
+    let sql = 'SELECT sum(bet_amount) as total FROM `baccarat_bet`  a left join members b on a.member_id=b.id where b.agency_team_id=? group by member_id'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function countProfits(data) {//
+    let sql = 'SELECT sum(a.profit) as total FROM `baccarat_bet`  a left join members b on a.member_id=b.id where b.agency_team_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function countProfit(data) {//
+    let sql = 'SELECT sum(a.profit) as total FROM `baccarat_bet` a left join members b on a.member_id=b.id where b.agency_team_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function countDeposits(data) {//
+    let sql = 'SELECT count(*) as total FROM `deposit_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function countDepositMembers(data) {//
+    let sql = 'select count(*) as total from (SELECT member_id FROM `deposit_order` a left join members b on a.member_id=b.id  where b.agency_team_id=? group by a.member_id) as a'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function countDepositAmounts(data) {//
+    let sql = 'SELECT sum(a.amount) as total FROM `deposit_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function countWithdrawalAmounts(data) {//
+    let sql = 'SELECT sum(a.amount) as total FROM `withdraw_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
 
 
 function errorMessage(errors) {//錯誤訊息回傳
@@ -393,5 +472,82 @@ function selectPoint(data) {//查看現有點數
     return dataList
 }
 
+/********* */
+
+
+function errorMessage(errors) {//錯誤訊息回傳
+    let errorrmsg = errors.array();
+    let emsg = "";
+    errorrmsg.forEach(function (erow, i) {//錯誤訊息
+        emsg = emsg + erow.msg + " ";
+    })
+    return emsg
+}
+function pagination(data) {//分頁設定
+    let skip = 0
+    let limit = 20
+    let orderBy = "id"
+    let order = "ASC"
+
+    if (data.query.skip) {
+        skip = data.query.skip
+    }
+    if (data.query.limit) {
+        limit = data.query.limit
+    }
+    if (data.query.orderBy) {
+        orderBy = data.query.orderBy
+    }
+    if (data.query.order) {
+        order = data.query.order
+    }
+    const conditionData = {
+        skip: skip,
+        limit: limit,
+        orderBy: orderBy,
+        order: order //排序類型
+    }
+    return conditionData
+}
+
+function betHistoryList(data) {//有效投注列表
+    let sql = "select a.sdate,a.finishtime,a.order_id,a.game_id,d.name as game_name,e.name as systeam,c.name as hierarchy,b.teacher_id,b.account,a.bet_amount,a.bet_amount,a.profit from baccarat_bet a left join members b on a.member_id=b.id  left join hierarchy_detail c on b.hierarchy_detail_id=c.id left join game_list d on a.game=d.id left join game_system e on d.game_system_id=e.id order by a." + data.orderBy + " " + data.order + " limit ?,?"
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+function betHistoryTotal(data) {//有效投注總數
+    let sql = 'select count(*) as total from baccarat_bet a left join members b on a.member_id=b.id  left join hierarchy_detail c on b.hierarchy_detail_id=c.id left join game_list d on a.game=d.id left join game_system e on d.game_system_id=e.id '
+    let dataList = query(sql)
+    return dataList
+}
+
+
+function whiteListInsert(data) {//寫入backend_whitelist資料庫
+    let sql = 'INSERT INTO backend_whitelist SET ?'
+    let dataList = query(sql, data)
+    return dataList
+}
+
+function whiteListUpdate(data,id) {//更新backend_whitelist資料庫
+    let sql = 'update backend_whitelist SET ? where id=?'
+    let dataList = query(sql, [data,id])
+    return dataList
+}
+function whiteListDel(id) {//刪除backend_whitelist資料庫
+    let sql = 'delete from backend_whitelist  where id=?'
+    let dataList = query(sql, [id])
+    return dataList
+}
+function whiteListInsertRt(data) {//查看backend_whitelist
+    let sql = 'SELECT * FROM `backend_whitelist` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function SelectListCheck(data) {//查看backend_whitelist
+    let sql = 'SELECT * FROM `backend_whitelist` where ip=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
 
 module.exports = AgencyController;

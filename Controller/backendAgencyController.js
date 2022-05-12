@@ -267,31 +267,31 @@ const AgencyController = {
         let agencyListInsert = {}
         for (i = 0; i < agencyLists.length; i++) {
             layer = await countLayer(agencyLists[i].id)
-            members_register=await countMembersRe(agencyLists[i].id)
-            members=await countMembers(agencyLists[i].id)
-            bets=await countBets(agencyLists[i].id)
-            profits=await countProfit(agencyLists[i].id)
-            deposits=await countDeposits(agencyLists[i].id)
-            depositMembers=await countDepositMembers(agencyLists[i].id)
-            depositAmounts=await countDepositAmounts(agencyLists[i].id)
-            withdrawalAmounts=await countWithdrawalAmounts(agencyLists[i].id)
-            betAmounts=await countBetAmounts(agencyLists[i].id)
-            betProfits=await countProfits(agencyLists[i].id)
-            
+            members_register = await countMembersRe(agencyLists[i].id)
+            members = await countMembers(agencyLists[i].id)
+            bets = await countBets(agencyLists[i].id)
+            profits = await countProfit(agencyLists[i].id)
+            deposits = await countDeposits(agencyLists[i].id)
+            depositMembers = await countDepositMembers(agencyLists[i].id)
+            depositAmounts = await countDepositAmounts(agencyLists[i].id)
+            withdrawalAmounts = await countWithdrawalAmounts(agencyLists[i].id)
+            betAmounts = await countBetAmounts(agencyLists[i].id)
+            betProfits = await countProfits(agencyLists[i].id)
+
             agencyListInsert = {
                 rank: agencyLists[i].rank,
                 account: agencyLists[i].account,
                 layer_count: layer[0].total,//下線代理數
-                members_register_count:members_register[0].total,
-                members_count:members[0].total,
-                bet_total:bets[0].total,
-                deposit_total:deposits[0].total,
-                deposit_members_total:depositMembers[0].total,
-                deposit_amount:depositAmounts[0].total,
-                withdrawal_amount:withdrawalAmounts[0].total,
-                bet_amount:betAmounts[0].total,
-                bet_amount_efficient:betProfits[0].total,
-                profit:profits[0].total
+                members_register_count: members_register[0].total,
+                members_count: members[0].total,
+                bet_total: bets[0].total,
+                deposit_total: deposits[0].total,
+                deposit_members_total: depositMembers[0].total,
+                deposit_amount: depositAmounts[0].total,
+                withdrawal_amount: withdrawalAmounts[0].total,
+                bet_amount: betAmounts[0].total,
+                bet_amount_efficient: betProfits[0].total,
+                profit: profits[0].total
             }
             finalRt.push(agencyListInsert)
             //console.log(agencyLists[i].account)
@@ -302,6 +302,24 @@ const AgencyController = {
             msg: "成功",
             data: finalRt
         });
+    },
+    agencyPoingLog: async (req, res) => {
+
+    },
+    agencyApplyList: async (req, res) => {
+        const conditionData = pagination(req) //分頁設定
+        const agencyApplyLists = await agencyApplyList(conditionData)//呼叫會員列表 傳入排序分頁等設定
+        const agencyApplyListTotals = await agencyApplyListTotal()//資料總筆數
+        const total = Math.ceil(Number(agencyApplyListTotals[0].total) / Number(conditionData.limit))//最大頁數
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: {
+                total: total,//最大頁數
+                list: agencyApplyLists
+            }
+        });
+        
     }
 
 
@@ -309,7 +327,7 @@ const AgencyController = {
 
 function countLayer(data) {
     let sql = 'SELECT count(*) as total FROM `agency_team` where layer_id=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function agencyReportList(data) {//
@@ -319,53 +337,53 @@ function agencyReportList(data) {//
 }
 function countMembersRe(data) {//
     let sql = 'SELECT count(*) as total FROM `members` where agency_team_id=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countMembers(data) {//
     let sql = 'SELECT count(*) as total FROM `members` where agency_team_id=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countBets(data) {//
     let sql = 'select count(*) as total from (SELECT a.member_id,b.agency_team_id FROM `baccarat_bet`  a left join members b on a.member_id=b.id where b.agency_team_id=? group by member_id) as a'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countBetAmounts(data) {//
     let sql = 'SELECT sum(bet_amount) as total FROM `baccarat_bet`  a left join members b on a.member_id=b.id where b.agency_team_id=? group by member_id'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countProfits(data) {//
     let sql = 'SELECT sum(a.profit) as total FROM `baccarat_bet`  a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 
 function countProfit(data) {//
     let sql = 'SELECT sum(a.profit) as total FROM `baccarat_bet` a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countDeposits(data) {//
     let sql = 'SELECT count(*) as total FROM `deposit_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countDepositMembers(data) {//
     let sql = 'select count(*) as total from (SELECT member_id FROM `deposit_order` a left join members b on a.member_id=b.id  where b.agency_team_id=? group by a.member_id) as a'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countDepositAmounts(data) {//
     let sql = 'SELECT sum(a.amount) as total FROM `deposit_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countWithdrawalAmounts(data) {//
     let sql = 'SELECT sum(a.amount) as total FROM `withdraw_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 
@@ -415,6 +433,19 @@ function agencyList(data) {//代理團隊列表
 
 function agencyListTotal() {//代理團隊列表總數
     let sql = 'SELECT count(*) as total FROM `agency_team` '
+    let dataList = query(sql)
+    return dataList
+}
+
+
+function agencyApplyList(data) {//代理團隊列表
+    let sql = 'SELECT * FROM `agency_apply` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function agencyApplyListTotal() {//代理團隊列表總數
+    let sql = 'SELECT count(*) as total FROM `agency_apply` '
     let dataList = query(sql)
     return dataList
 }

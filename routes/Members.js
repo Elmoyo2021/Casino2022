@@ -8,6 +8,7 @@ const { query } = require('../async-db')
 router.post('/login', MembersController.login);//會員登入
 router.post('/deposit', MembersController.deposit);//充值申請
 router.post('/withdraw', MembersController.withdraw);//提款申請
+router.post('/agencyApply', MembersController.agencyApply);//代理申請
 router.get('/aisleList',MembersController.aisleList)//支付通道列表
 router.post('/bindCard', [//標籤列表 新增
     check('name', '卡號名稱必須填寫')

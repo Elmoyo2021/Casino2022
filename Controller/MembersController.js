@@ -218,6 +218,28 @@ const MembersController = {
             msg: searchData
         });
     },
+    agencyApply:async (req, res) => {//支付通道列表
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {//是否有正確填寫欄位值
+            const error_msg = errorMessage(errors)//取得錯誤訊息
+            return res.json({//回傳失敗訊息
+                code: 401,
+                msg: "失敗",
+                data: error_msg
+            });
+        }
+        const InserData = {
+            account: req.body.account,
+            name:req.body.name,
+            phone:req.body.phone
+        }
+        const agencyApplyAdd = await agencyApplyInsert(InserData)//寫入資料庫
+        const agencyApplyRts = await agencyApplyRt(agencyApplyAdd.insertId)//回傳成功表
+        return res.json({//回傳失敗訊息
+            code: 200,
+            msg: agencyApplyRts
+        });
+    }
 
 }
 
@@ -275,6 +297,19 @@ function withdrawRt(data) {//查看withdraw_order
 
 
 
+
+function agencyApplyInsert(data) {//寫入agency_apply資料庫
+    let sql = 'INSERT INTO agency_apply SET ?'
+    let dataList = query(sql, data)
+    return dataList
+}
+function agencyApplyRt(data) {//查看agency_apply
+    let sql = 'SELECT * FROM `agency_apply` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
 function depositInsert(data) {//寫入deposit_order資料庫
     let sql = 'INSERT INTO deposit_order SET ?'
     let dataList = query(sql, data)
@@ -326,6 +361,47 @@ function changeToType(data) {
 function postscriptCode(data) {
     let sql = 'select CONCAT("'+data+'",substring(md5(rand()),1,5)) as code FROM deposit_order WHERE "postscript" NOT IN (SELECT postscript FROM deposit_order) LIMIT 1'
     let dataList = query(sql)
+    return dataList
+}
+
+
+function whiteList(data) {//黑白名單列表
+    let sql = "select * from backend_whitelist  order by " + data.orderBy + " " + data.order + " limit ?,?"
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+function whiteListTotal(data) {//黑白名單總數
+    let sql = 'SELECT count(*) as total FROM `backend_whitelist`'
+    let dataList = query(sql)
+    return dataList
+}
+
+
+function whiteListInsert(data) {//寫入backend_whitelist資料庫
+    let sql = 'INSERT INTO backend_whitelist SET ?'
+    let dataList = query(sql, data)
+    return dataList
+}
+
+function whiteListUpdate(data,id) {//更新backend_whitelist資料庫
+    let sql = 'update backend_whitelist SET ? where id=?'
+    let dataList = query(sql, [data,id])
+    return dataList
+}
+function whiteListDel(id) {//刪除backend_whitelist資料庫
+    let sql = 'delete from backend_whitelist  where id=?'
+    let dataList = query(sql, [id])
+    return dataList
+}
+function whiteListInsertRt(data) {//查看backend_whitelist
+    let sql = 'SELECT * FROM `backend_whitelist` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function SelectListCheck(data) {//查看backend_whitelist
+    let sql = 'SELECT * FROM `backend_whitelist` where ip=?'
+    let dataList = query(sql, [data])
     return dataList
 }
 module.exports = MembersController;

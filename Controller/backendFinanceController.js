@@ -786,7 +786,7 @@ function withdrawListTotal(data) {
     return dataList
 }
 function financeAccount(data) {//出入款銀行列表
-    let sql = 'SELECT bank,title_cn,bank_type,account,currency,vip_level,deposit_max_day,deposit_max_total,status,dispensing_status,balance_min,remark FROM `finance_account` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let sql = 'SELECT id,bank,title_cn,bank_type,account,currency,vip_level,deposit_max_day,deposit_max_total,status,dispensing_status,dispensing_min as dispensing_amount,balance_min,remark,updataUser,updateTime FROM `finance_account` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
     let dataList = query(sql, [Number(data.skip), Number(data.limit)])
     return dataList
 }

@@ -296,14 +296,60 @@ const AgencyController = {
             finalRt.push(agencyListInsert)
             //console.log(agencyLists[i].account)
         }
-        console.log(finalRt)
         return res.json({//回傳成功
             code: 200,
             msg: "成功",
             data: finalRt
         });
     },
-    agencyPoingLog: async (req, res) => {
+    agencyAccounted: async (req, res) => {
+
+        const agencyLists = await agencyReportList()
+        let finalRt = []
+        let agencyListInsert = {}
+        for (i = 0; i < agencyLists.length; i++) {
+            members = await countMembers(agencyLists[i].id)
+            bets = await countBets(agencyLists[i].id)
+            profits = await countProfit(agencyLists[i].id)
+            betAmounts = await countBetAmounts(agencyLists[i].id)
+            betProfits = await countProfits(agencyLists[i].id)
+            var accounteds=0,totals=0
+            accounteds=Number(betProfits[0].total)*0.1
+            totals=accounteds
+            agencyListInsert = {
+                account: agencyLists[i].account,
+                rank: agencyLists[i].rank,
+                members_count: members[0].total,
+                bet_total: bets[0].total,
+                bet_amount: betAmounts[0].total,
+                bet_amount_efficient: betProfits[0].total,
+                profit: profits[0].total,
+                accounted:accounteds,
+                layer_bonus:0,
+                total:totals,
+            }
+            finalRt.push(agencyListInsert)
+            //console.log(agencyLists[i].account)
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "成功",
+            data: finalRt
+        });
+    },
+    agencyPointLog: async (req, res) => {
+        const conditionData = pagination(req) //分頁設定
+        const agencyPointLogs = await agencyPointLog(conditionData)//呼叫會員列表 傳入排序分頁等設定
+        const agencyPointLogTotals = await agencyPointLogTotal()//資料總筆數
+        const total = Math.ceil(Number(agencyPointLogTotals[0].total) / Number(conditionData.limit))//最大頁數
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: {
+                total: total,//最大頁數
+                list: agencyPointLogs
+            }
+        });
 
     },
     agencyApplyList: async (req, res) => {
@@ -319,7 +365,7 @@ const AgencyController = {
                 list: agencyApplyLists
             }
         });
-        
+
     }
 
 
@@ -450,6 +496,18 @@ function agencyApplyListTotal() {//代理團隊列表總數
     return dataList
 }
 
+
+function agencyPointLog(data) {//代理團隊列表
+    let sql = 'SELECT * FROM `agency_point_log` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function agencyPointLogTotal() {//代理團隊列表總數
+    let sql = 'SELECT count(*) as total FROM `agency_point_log` '
+    let dataList = query(sql)
+    return dataList
+}
 function checkMembers(data) {//確認會員帳號是否存在
     let sql = 'SELECT * FROM `members` where account=?'
     let dataList = query(sql, [data])

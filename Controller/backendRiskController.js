@@ -220,4 +220,130 @@ function SelectListCheck(data) {//查看backend_whitelist
     return dataList
 }
 
+
+/***********/ 
+
+function advertiseListRt(data) {//查看advertise_carousel
+    let sql = 'SELECT * FROM `advertise_carousel` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+function advertiseFloatRt(data) {//查看advertise_carousel
+    let sql = 'SELECT * FROM `advertise_float` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function advertiseFloatData(data) {//查看advertise_carousel資料
+    let sql = 'SELECT * FROM `advertise_float` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function announcementUpdate(data, id) {//更新announcement資料庫
+    let sql = 'update announcement SET ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+function announcementsDel(data) {//更新announcement資料庫
+    let sql = 'delete from announcement where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+
+function letterList(data) {//會員站內信
+    let sql = 'SELECT * FROM `members_letter` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function letterTotal() {//會員站內信列表總數
+    let sql = 'SELECT count(*) as total FROM `members_letter` '
+    let dataList = query(sql)
+    return dataList
+}
+
+
+function letterInsert(data) {//寫入members_letter資料庫
+    let sql = 'INSERT INTO members_letter SET ?'//公告
+    let dataList = query(sql, [data])
+    return dataList
+}
+function letterRt(data) {//查看announcement
+    let sql = 'SELECT * FROM `members_letter` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+
+function staticPagetList(data) {//會員靜態頁面列表
+    let sql = 'SELECT * FROM `static_page` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
+    let dataList = query(sql, [Number(data.skip), Number(data.limit)])
+    return dataList
+}
+
+function staticPageTotal() {//會員靜態頁面列表總數
+    let sql = 'SELECT count(*) as total FROM `static_page` '
+    let dataList = query(sql)
+    return dataList
+}
+function staticPageInsert(data) {//更新staticPage資料庫
+    let sql = 'INSERT INTO static_page SET ?'//靜態頁面
+    let dataList = query(sql, [data])
+    return dataList
+}
+function staticPageUpdate(data, id) {//更新staticPage資料庫
+    let sql = 'update static_page SET ? where id=?'
+    let dataList = query(sql, [data, id])
+    return dataList
+}
+function staticPageRt(data) {//查看staticPage
+    let sql = 'SELECT * FROM `static_page` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+
+
+
+function toMembersInsert(data) {//更新member_letter_detail資料庫
+    let sql = 'INSERT INTO members_letter_detail SET ?'//靜態頁面
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function toGroupList(data) {//查看toGroupList
+    let sql = 'SELECT id FROM `members` where hierarchy_detail_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+
+function getRandom(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+
+function checkStatus(stime, etime, status) {
+    if (status == "disble") {
+        return "停用"
+    } else if (stime <= moment().format('YYYY-MM-DD HH:mm:ss') && etime >= moment().format('YYYY-MM-DD HH:mm:ss')) {
+        return "運行中"
+    } else {
+        return "逾期"
+    }
+}
+
+
+function fileNameSet(originalname, path, newPath) {//上傳圖片 originalname上傳檔名 path上傳暫存位置 newPath上傳資料夾
+    extName = originalname.slice(originalname.lastIndexOf("."));//取得副檔名
+    const filesName = "adfloat" + moment().format('YYYYMMDD_hhmmss') + "_" + getRandom(11111, 99999) + extName;
+    fs.rename(path, newPath + filesName, () => { })//上傳圖片
+    fs.unlink(path, error => { return "Error" }); // 刪除暫存檔
+    return filesName;
+}
 module.exports = backendRiskController;

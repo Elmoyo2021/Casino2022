@@ -4,6 +4,6 @@ const { check, validationResult } = require('express-validator')
 var router = express.Router();
 const { query } = require('../async-db')
 
-router.get('/betHistory', backendReportController.betHistory);//黑白名單列表
-
+router.get('/betHistory', backendReportController.betHistory);//下注紀錄
+router.get('/memberReport', backendReportController.memberReport);//會員報表
 module.exports = router;

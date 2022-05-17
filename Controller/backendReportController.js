@@ -136,11 +136,6 @@ function countMembers(data) {//
     let dataList = query(sql, [data])
     return dataList
 }
-function countBets(data) {//
-    let sql = 'select count(*) as total from `baccarat_bet` where member_id=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
 function countBetAmounts(data) {//
     let sql = 'SELECT sum(bet_amount) as total from `baccarat_bet` where member_id=?'
     let dataList = query(sql, [data])
@@ -151,33 +146,6 @@ function countProfits(data) {//
     let dataList = query(sql, [data])
     return dataList
 }
-
-function countProfit(data) {//
-    let sql = 'SELECT sum(a.profit) as total FROM `baccarat_bet` a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
-function countDeposits(data) {//
-    let sql = 'SELECT count(*) as total FROM `deposit_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
-function countDepositMembers(data) {//
-    let sql = 'select count(*) as total from (SELECT member_id FROM `deposit_order` a left join members b on a.member_id=b.id  where b.agency_team_id=? group by a.member_id) as a'
-    let dataList = query(sql, [data])
-    return dataList
-}
-function countDepositAmounts(data) {//
-    let sql = 'SELECT sum(a.amount) as total FROM `deposit_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
-function countWithdrawalAmounts(data) {//
-    let sql = 'SELECT sum(a.amount) as total FROM `withdraw_order` a left join members b on a.member_id=b.id where b.agency_team_id=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
-
 
 
 function betHistoryList(data) {//有效投注列表
@@ -192,33 +160,6 @@ function betHistoryTotal(data) {//有效投注總數
 }
 
 
-function whiteListInsert(data) {//寫入backend_whitelist資料庫
-    let sql = 'INSERT INTO backend_whitelist SET ?'
-    let dataList = query(sql, data)
-    return dataList
-}
-
-function whiteListUpdate(data, id) {//更新backend_whitelist資料庫
-    let sql = 'update backend_whitelist SET ? where id=?'
-    let dataList = query(sql, [data, id])
-    return dataList
-}
-function whiteListDel(id) {//刪除backend_whitelist資料庫
-    let sql = 'delete from backend_whitelist  where id=?'
-    let dataList = query(sql, [id])
-    return dataList
-}
-function whiteListInsertRt(data) {//查看backend_whitelist
-    let sql = 'SELECT * FROM `backend_whitelist` where id=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
-
-function SelectListCheck(data) {//查看backend_whitelist
-    let sql = 'SELECT * FROM `backend_whitelist` where ip=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
 
 
 
@@ -232,36 +173,6 @@ function SelectListCheck(data) {//查看backend_whitelist
 
 
 
-
-
-
-function whiteListInsert(data) {//寫入backend_whitelist資料庫
-    let sql = 'INSERT INTO backend_whitelist SET ?'
-    let dataList = query(sql, data)
-    return dataList
-}
-
-function whiteListUpdate(data,id) {//更新backend_whitelist資料庫
-    let sql = 'update backend_whitelist SET ? where id=?'
-    let dataList = query(sql, [data,id])
-    return dataList
-}
-function whiteListDel(id) {//刪除backend_whitelist資料庫
-    let sql = 'delete from backend_whitelist  where id=?'
-    let dataList = query(sql, [id])
-    return dataList
-}
-function whiteListInsertRt(data) {//查看backend_whitelist
-    let sql = 'SELECT * FROM `backend_whitelist` where id=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
-
-function SelectListCheck(data) {//查看backend_whitelist
-    let sql = 'SELECT * FROM `backend_whitelist` where ip=?'
-    let dataList = query(sql, [data])
-    return dataList
-}
 
 
 

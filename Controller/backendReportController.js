@@ -1,6 +1,7 @@
 const { query } = require('../async-db')
 const { check, validationResult } = require('express-validator')
 var geoip = require('geoip-lite');
+var moment = require('moment'); // require
 
 const backendReportController = {
     betHistory: async (req, res) => {//投注紀錄列表
@@ -18,8 +19,99 @@ const backendReportController = {
         });
 
     },
-    memberReport: async(req, res) => {//會員列表
+    memberReport: async (req, res) => {//會員列表
+        const memberReportLists = await memberReportList()
+        console.log(memberReportLists.length)
+        let finalRt = []
+        let reportData = {}
+        for (i = 0; i < memberReportLists.length; i++) {
+            members = await countMembers(memberReportLists[i].teacher_id)
+            if (members.length <= 0) {
+                teachers = ""
+            } else {
+                teachers = members[0].name
+            }
+            depositCount = await countDepositCount(memberReportLists[i].member_id)
+            depositAmount = await countDepositAmount(memberReportLists[i].member_id)
+            withdrawalCount = await countWithdrawalCount(memberReportLists[i].member_id)
+            withdrawalAmount = await countWithdrawalAmount(memberReportLists[i].member_id)
+            betAmounts = await countBetAmounts(memberReportLists[i].member_id)
+            betProfits = await countProfits(memberReportLists[i].member_id)
+            var accounteds = 0, totals = 0
+            accounteds = Number(betProfits[0].total) * 0.1
+            totals = accounteds
+            reportData = {
+                agency_team: memberReportLists[i].agency_team,
+                teacher_id: teachers,
+                account: memberReportLists[i].account,
+                name: memberReportLists[i].name,
+                hierarchy: memberReportLists[i].hierarchy,
+                tags: memberReportLists[i].tags,
+                depositCount: depositCount[0].total,//存款次數
+                depositAmount: depositAmount[0].total,//存款金額
+                withdrawalCount: withdrawalCount[0].total,//提款次數
+                withdrawalAmount: withdrawalAmount[0].total,//提款次數
+                betAmounts: betAmounts[0].total,
+                valid_bet: betAmounts[0].total,
+                profit: betProfits[0].total
+            }
+            finalRt.push(reportData)
+            //console.log(agencyLists[i].account)
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "成功",
+            data: finalRt
+        });
 
+    },
+    profitReport: async (req, res) => {//損益列表)
+        var nextday = ""
+        var finalRt = []
+        for (i = 0; i <= 7; i++) {
+            nextday = moment().add(i, 'days').format('YYYY-MM-DD');
+            members = await countRegisterMember(nextday)
+            depositTotals = await countProfitDeposit(nextday)
+            depositAmounts = await countProfitDepositAmount(nextday)
+            
+            withdrawalTotals = await countProfitWithdrawal(nextday)
+            withdrawalAmounts = await ProfitWithdrawalAmount(nextday)
+            betAmounts = await profitBetAmounts(nextday)
+            betProfits = await profitBetProfits(nextday)
+
+            console.log(nextday)
+            DataAdd = {
+                date: nextday,
+                register_member: members[0].total,
+                first_deposit: "暫無",
+                depositTotal: depositTotals[0].total,
+                three_platform: depositAmounts[0].total,
+                withdrawalTotal: withdrawalTotals[0].total,
+                withdrawalAmount: withdrawalAmounts[0].total,
+                adjustmentAmount: "暫無",
+                bet_efficient: betAmounts[0].total,
+                bet_profit: betProfits[0].total,
+
+
+            }
+            finalRt.push(DataAdd)
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: finalRt
+        });
+
+
+
+
+
+
+
+
+
+
+        /*
         const memberReportLists = await memberReportList()
         console.log(memberReportLists.length)
         let finalRt = []
@@ -63,8 +155,9 @@ const backendReportController = {
             msg: "成功",
             data: finalRt
         });
+        */
 
-}
+    },
 
 }
 
@@ -105,7 +198,46 @@ function pagination(data) {//分頁設定
     return conditionData
 }
 
-function memberReportList(data){//會員報表列表
+
+function countRegisterMember(data) {
+    let sql = 'select count(*) as total from `members` where  Createtime BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function profitBetAmounts(data) {
+    let sql = 'select sum(bet_amount) as total from `baccarat_bet` where status="finish" and sdate BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function profitBetProfits(data) {
+    let sql = 'select sum(profit) as total from `baccarat_bet` where status="finish" and sdate BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+
+
+function countProfitDeposit(data) {
+    let sql = 'select count(*) as total from `deposit_order` where status=1 and Createtime BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function countProfitDepositAmount(data) {
+    let sql = 'select sum(pay_amount) as total from `deposit_order` where status=1 and Createtime BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function countProfitWithdrawal(data) {
+    let sql = 'select count(*) as total from `withdraw_order` where status="finish" and Createtime BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function ProfitWithdrawalAmount(data) {
+    let sql = 'select sum(actual_amount) as total from `withdraw_order` where status="finish" and Createtime BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+
+function memberReportList(data) {//會員報表列表
     let sql = "select b.name as agency_team,a.teacher_id,a.account,a.name,c.name as hierarchy,d.title as tags,a.id as member_id from members a left join agency_team b on a.agency_team_id=b.id left join hierarchy_detail c on a.hierarchy_detail_id=c.id left join tags d on a.tags=d.id"
     let dataList = query(sql)
     return dataList
@@ -113,22 +245,22 @@ function memberReportList(data){//會員報表列表
 
 function countDepositCount(data) {//
     let sql = 'select count(*) as total from `deposit_order` where member_id=? and status=1'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countDepositAmount(data) {//
     let sql = 'select sum(pay_amount) as total from `deposit_order` where member_id=? and status=1'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countWithdrawalCount(data) {//
     let sql = 'select count(*) as total from `withdraw_order` where member_id=? and status="finish"'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countWithdrawalAmount(data) {//
     let sql = 'select sum(actual_amount) as total from `withdraw_order` where member_id=? and status="finish"'
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 function countMembers(data) {//

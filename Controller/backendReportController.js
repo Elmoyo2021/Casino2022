@@ -65,7 +65,39 @@ const backendReportController = {
         });
 
     },
-    profitReport: async (req, res) => {//損益列表)
+    gameReport: async (req, res) => {//遊戲列表
+        var nextday = ""
+        var finalRt = []
+        for (i = 31; i >= 0; i--) {
+            nextday = moment().add(-i, 'days').format('YYYY-MM-DD');
+            members = await countGameMember(nextday)
+            if(members.length>0){
+                members=members[0].total
+            }else{
+                members=0
+            }
+            betCount = await countGameBet(nextday)
+            betAmount = await countGameBetAmount(nextday)
+            betProfit = await countGameBetProfit(nextday)
+            DataAdd = {
+                date: nextday,
+                memberCount: members,
+                betCount: betCount[0].total,
+                betAmount: betAmount[0].total,
+                betEfficient: betAmount[0].total,
+                betProfit: betProfit[0].total,
+            }
+            console.log(DataAdd)
+            finalRt.push(DataAdd)
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: finalRt
+        });
+
+    },
+    profitReport: async (req, res) => {//損益列表
         var nextday = ""
         var finalRt = []
         for (i = 0; i <= 7; i++) {
@@ -143,6 +175,27 @@ function pagination(data) {//分頁設定
     return conditionData
 }
 
+
+function countGameMember(data) {
+    let sql = 'select count(*) as total from `baccarat_bet` where sdate BETWEEN ? AND ? group by member_id'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function countGameBet(data) {
+    let sql = 'select count(*) as total from `baccarat_bet` where sdate BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function countGameBetAmount(data) {
+    let sql = 'select sum(bet_amount) as total from `baccarat_bet` where sdate BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function countGameBetProfit(data) {
+    let sql = 'select sum(profit) as total from `baccarat_bet` where sdate BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
 
 function countRegisterMember(data) {
     let sql = 'select count(*) as total from `members` where  Createtime BETWEEN ? AND ?'

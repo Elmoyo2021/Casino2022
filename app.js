@@ -21,6 +21,7 @@ var memberPagesRouter = require('./routes/backendMemberPages');
 var backendLayerRouter = require('./routes/backendLayer');
 var backendCasinoRouter = require('./routes/backendCasino');
 var backendReportRouter = require('./routes/backendReport');
+var backendPageRouter = require('./routes/backendPageRouter');
 var MembersRouter = require('./routes/Members');
 
 
@@ -95,6 +96,7 @@ app.use('/backend/management', backendManagementRouter);
 app.use('/backend/layer', backendLayerRouter);
 app.use('/backend/casino', backendCasinoRouter);
 app.use('/backend/report', backendReportRouter);
+app.use('/backend/page', backendPageRouter);
 
 /* 有加判斷登入
 app.use('/backend', authAdmin.adminRequired, indexRouter);

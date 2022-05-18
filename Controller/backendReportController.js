@@ -102,61 +102,6 @@ const backendReportController = {
             data: finalRt
         });
 
-
-
-
-
-
-
-
-
-
-        /*
-        const memberReportLists = await memberReportList()
-        console.log(memberReportLists.length)
-        let finalRt = []
-        let reportData = {}
-        for (i = 0; i < memberReportLists.length; i++) {
-            members = await countMembers(memberReportLists[i].teacher_id)
-            if(members.length<=0){
-                teachers=""
-            }else{
-                teachers=members[0].name
-            }
-            depositCount = await countDepositCount(memberReportLists[i].member_id)
-            depositAmount = await countDepositAmount(memberReportLists[i].member_id)
-            withdrawalCount = await countWithdrawalCount(memberReportLists[i].member_id)
-            withdrawalAmount = await countWithdrawalAmount(memberReportLists[i].member_id)
-            betAmounts = await countBetAmounts(memberReportLists[i].member_id)
-            betProfits = await countProfits(memberReportLists[i].member_id)
-            var accounteds=0,totals=0
-            accounteds=Number(betProfits[0].total)*0.1
-            totals=accounteds
-            reportData = {
-                agency_team: memberReportLists[i].agency_team,
-                teacher_id: teachers,
-                account: memberReportLists[i].account,
-                name: memberReportLists[i].name,
-                hierarchy: memberReportLists[i].hierarchy,
-                tags: memberReportLists[i].tags,
-                depositCount:depositCount[0].total,//存款次數
-                depositAmount:depositAmount[0].total,//存款金額
-                withdrawalCount:withdrawalCount[0].total,//提款次數
-                withdrawalAmount:withdrawalAmount[0].total,//提款次數
-                betAmounts:betAmounts[0].total,
-                valid_bet:betAmounts[0].total,
-                profit:betProfits[0].total
-            }
-            finalRt.push(reportData)
-            //console.log(agencyLists[i].account)
-        }
-        return res.json({//回傳成功
-            code: 200,
-            msg: "成功",
-            data: finalRt
-        });
-        */
-
     },
 
 }

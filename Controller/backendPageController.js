@@ -4,21 +4,112 @@ var geoip = require('geoip-lite');
 var moment = require('moment'); // require
 
 const backendReportController = {
-    betHistory: async (req, res) => {//投注紀錄列表
-        const conditionData = pagination(req) //分頁設定
-        const betHistoryLists = await betHistoryList(conditionData)//呼叫投注紀錄列表 傳入排序分頁等設定
-        const betHistorysTotal = await betHistoryTotal(req.query.member_id)//資料總筆數
-        const total = Math.ceil(Number(betHistorysTotal[0].total) / Number(conditionData.limit))//最大頁數
+    topDeposit: async (req, res) => {//投注紀錄列表
+        const topDeposits = await topDepositMembers()//10大存款
         return res.json({//回傳成功
             code: 200,
             msg: "回傳成功",
-            data: {
-                total: total,//最大頁數
-                list: betHistoryLists
-            }
+            data: topDeposits
         });
 
-    }
+    },
+    recentWithdrawal: async (req, res) => {//投注紀錄列表
+        const topWithdrawals = await topWithdrawalMembers()//10大存款
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: topWithdrawals
+        });
+
+    },
+    topDepositToday: async (req, res) => {//投注紀錄列表
+        const topDepositTodays = await topDepositToday()//10大存款
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: topDepositTodays
+        });
+
+    },
+    recentRegister: async (req, res) => {//投注紀錄列表
+        const topDeposits = await topDepositMembers()//10大存款
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: topDepositMembers
+        });
+
+    },
+    gameReport: async (req, res) => {//
+        var nextday = ""
+        var finalRt = []
+        for (i = 31; i >= 0; i--) {
+            nextday = moment().add(-i, 'days').format('YYYY-MM-DD');
+            members = await countGameMember(nextday)
+            if(members.length>0){
+                members=members[0].total
+            }else{
+                members=0
+            }
+            betCount = await countGameBet(nextday)
+            betAmount = await countGameBetAmount(nextday)
+            betProfit = await countGameBetProfit(nextday)
+            DataAdd = {
+                date: nextday,
+                memberCount: members,
+                betCount: betCount[0].total,
+                betAmount: betAmount[0].total,
+                betEfficient: betAmount[0].total,
+                betProfit: betProfit[0].total,
+            }
+            console.log(DataAdd)
+            finalRt.push(DataAdd)
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: finalRt
+        });
+
+    },
+    profitReport: async (req, res) => {//
+        var nextday = ""
+        var finalRt = []
+        for (i = 0; i <= 7; i++) {
+            nextday = moment().add(i, 'days').format('YYYY-MM-DD');
+            members = await countRegisterMember(nextday)
+            depositTotals = await countProfitDeposit(nextday)
+            depositAmounts = await countProfitDepositAmount(nextday)
+            
+            withdrawalTotals = await countProfitWithdrawal(nextday)
+            withdrawalAmounts = await ProfitWithdrawalAmount(nextday)
+            betAmounts = await profitBetAmounts(nextday)
+            betProfits = await profitBetProfits(nextday)
+
+            console.log(nextday)
+            DataAdd = {
+                date: nextday,
+                register_member: members[0].total,
+                first_deposit: "暫無",
+                depositTotal: depositTotals[0].total,
+                three_platform: depositAmounts[0].total,
+                withdrawalTotal: withdrawalTotals[0].total,
+                withdrawalAmount: withdrawalAmounts[0].total,
+                adjustmentAmount: "暫無",
+                bet_efficient: betAmounts[0].total,
+                bet_profit: betProfits[0].total,
+
+
+            }
+            finalRt.push(DataAdd)
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: finalRt
+        });
+
+    },
 
 }
 
@@ -60,11 +151,23 @@ function pagination(data) {//分頁設定
 }
 
 
-function countGameMember(data) {
-    let sql = 'select count(*) as total from `baccarat_bet` where sdate BETWEEN ? AND ? group by member_id'
-    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+function topDepositMembers(data) {
+    let sql = 'select * from (SELECT a.member_id,b.account, COUNT(*) as total,sum(a.pay_amount) as amount FROM deposit_order a left join members b on a.member_id=b.id WHERE a.status = "1" GROUP BY a.member_id HAVING COUNT(*) > 0 limit 0,10) as a order by total DESC'
+    let dataList = query(sql)
     return dataList
 }
+function topDepositToday(data) {
+    today = moment().format('YYYY-MM-DD');
+    let sql = 'select * from (SELECT a.member_id,b.account, COUNT(*) as total,sum(a.pay_amount) as amount FROM deposit_order a left join members b on a.member_id=b.id WHERE a.status = "1" and a.Createtime between "'+today+' 00:00:00" and "'+today+' 23:59:59" GROUP BY a.member_id HAVING COUNT(*) > 0 limit 0,10) as a order by total DESC'
+    let dataList = query(sql)
+    return dataList
+}
+function topWithdrawalMembers(data) {
+    let sql = 'select * from (SELECT a.member_id,b.account, COUNT(*) as total,sum(a.actual_amount) as amount FROM withdraw_order a left join members b on a.member_id=b.id WHERE a.status = "finish" GROUP BY a.member_id HAVING COUNT(*) > 0 limit 0,10) as a order by total DESC'
+    let dataList = query(sql)
+    return dataList
+}
+
 function countGameBet(data) {
     let sql = 'select count(*) as total from `baccarat_bet` where sdate BETWEEN ? AND ?'
     let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])

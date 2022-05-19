@@ -21,7 +21,7 @@ var memberPagesRouter = require('./routes/backendMemberPages');
 var backendLayerRouter = require('./routes/backendLayer');
 var backendCasinoRouter = require('./routes/backendCasino');
 var backendReportRouter = require('./routes/backendReport');
-var backendPageRouter = require('./routes/backendPageRouter');
+var backendPageRouter = require('./routes/backendPage');
 var MembersRouter = require('./routes/Members');
 
 

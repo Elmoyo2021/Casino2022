@@ -39,77 +39,8 @@ const backendReportController = {
             data: topDepositMembers
         });
 
-    },
-    gameReport: async (req, res) => {//
-        var nextday = ""
-        var finalRt = []
-        for (i = 31; i >= 0; i--) {
-            nextday = moment().add(-i, 'days').format('YYYY-MM-DD');
-            members = await countGameMember(nextday)
-            if(members.length>0){
-                members=members[0].total
-            }else{
-                members=0
-            }
-            betCount = await countGameBet(nextday)
-            betAmount = await countGameBetAmount(nextday)
-            betProfit = await countGameBetProfit(nextday)
-            DataAdd = {
-                date: nextday,
-                memberCount: members,
-                betCount: betCount[0].total,
-                betAmount: betAmount[0].total,
-                betEfficient: betAmount[0].total,
-                betProfit: betProfit[0].total,
-            }
-            console.log(DataAdd)
-            finalRt.push(DataAdd)
-        }
-        return res.json({//回傳成功
-            code: 200,
-            msg: "回傳成功",
-            data: finalRt
-        });
-
-    },
-    profitReport: async (req, res) => {//
-        var nextday = ""
-        var finalRt = []
-        for (i = 0; i <= 7; i++) {
-            nextday = moment().add(i, 'days').format('YYYY-MM-DD');
-            members = await countRegisterMember(nextday)
-            depositTotals = await countProfitDeposit(nextday)
-            depositAmounts = await countProfitDepositAmount(nextday)
-            
-            withdrawalTotals = await countProfitWithdrawal(nextday)
-            withdrawalAmounts = await ProfitWithdrawalAmount(nextday)
-            betAmounts = await profitBetAmounts(nextday)
-            betProfits = await profitBetProfits(nextday)
-
-            console.log(nextday)
-            DataAdd = {
-                date: nextday,
-                register_member: members[0].total,
-                first_deposit: "暫無",
-                depositTotal: depositTotals[0].total,
-                three_platform: depositAmounts[0].total,
-                withdrawalTotal: withdrawalTotals[0].total,
-                withdrawalAmount: withdrawalAmounts[0].total,
-                adjustmentAmount: "暫無",
-                bet_efficient: betAmounts[0].total,
-                bet_profit: betProfits[0].total,
-
-
-            }
-            finalRt.push(DataAdd)
-        }
-        return res.json({//回傳成功
-            code: 200,
-            msg: "回傳成功",
-            data: finalRt
-        });
-
-    },
+    }
+    
 
 }
 

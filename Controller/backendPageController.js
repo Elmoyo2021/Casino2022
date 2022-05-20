@@ -4,8 +4,8 @@ var geoip = require('geoip-lite');
 var moment = require('moment'); // require
 
 const backendReportController = {
-    topDeposit: async (req, res) => {//投注紀錄列表
-        const topDeposits = await topDepositMembers()//10大存款
+    topDeposit: async (req, res) => {//前10大存款列表列表
+        const topDeposits = await topDepositMembers()//前10大存款
         return res.json({//回傳成功
             code: 200,
             msg: "回傳成功",
@@ -13,17 +13,32 @@ const backendReportController = {
         });
 
     },
-    recentWithdrawal: async (req, res) => {//投注紀錄列表
-        const topWithdrawals = await topWithdrawalMembers()//10大存款
+    recentWithdrawal: async (req, res) => {//過去7日取款列表
+        const topWithdrawals = await topWithdrawalMembers()//過去7日取款列表
+        var finalRt = []
+        for (i = 0; i <= 7; i++) {
+            nextday = moment().add(-i, 'days').format('YYYY-MM-DD');
+            //members = await countGameMember(nextday)
+            amounts = await countAmountWithdrawal(nextday)
+            totals = await countWithdrawal(nextday)
+            avg=Number(amounts[0].total)/Number(totals[0].total)
+            AddData = {
+                date: nextday,
+                amount: amounts[0].total,
+                total: totals[0].total,
+                average: avg
+            }
+            finalRt.push(AddData)
+        }
         return res.json({//回傳成功
             code: 200,
             msg: "回傳成功",
-            data: topWithdrawals
+            data: finalRt
         });
 
     },
-    topDepositToday: async (req, res) => {//投注紀錄列表
-        const topDepositTodays = await topDepositToday()//10大存款
+    topDepositToday: async (req, res) => {//今日存款列表
+        const topDepositTodays = await topDepositToday()//今日存款列表
         return res.json({//回傳成功
             code: 200,
             msg: "回傳成功",
@@ -31,7 +46,35 @@ const backendReportController = {
         });
 
     },
-    recentRegister: async (req, res) => {//投注紀錄列表
+    recentRegister: async (req, res) => {//進7日註冊會員
+        //const recentRegisterMembers = await recentRegisterMember()//10大存款
+        const topWithdrawals = await topWithdrawalMembers()//印日取款列表
+        var finalRt = []
+        for (i = 0; i <= 7; i++) {
+            nextday = moment().add(-i, 'days').format('YYYY-MM-DD');
+            //members = await countGameMember(nextday)
+            registerTotal = await countRegister(nextday)
+            depositTotals = await countRegisterDeposit(nextday)
+            AddData = {
+                date: nextday,
+                registerTotal: registerTotal[0].total,
+                depositTotal: depositTotals[0].total
+            }
+            finalRt.push(AddData)
+        }
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: finalRt
+        });
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: recentRegisterMembers
+        });
+
+    },
+    pageTopData: async (req, res) => {//上方數據
         const topDeposits = await topDepositMembers()//10大存款
         return res.json({//回傳成功
             code: 200,
@@ -82,6 +125,28 @@ function pagination(data) {//分頁設定
 }
 
 
+function countRegister(data) {
+    let sql = 'select count(*) as total from members where Createtime BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function countRegisterDeposit(data) {
+    let sql = 'select sum(pay_amount) as total from `deposit_order` where status="finish" and Createtime BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function countAmountWithdrawal(data) {
+    let sql = 'select count(*) as total from (select member_id from `withdraw_order` where status="finish" and Createtime BETWEEN ? AND ? group by member_id) as a'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+function countWithdrawal(data) {
+    let sql = 'select sum(actual_amount) as total from `withdraw_order` where status="finish" and Createtime BETWEEN ? AND ?'
+    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+    return dataList
+}
+
+
 function topDepositMembers(data) {
     let sql = 'select * from (SELECT a.member_id,b.account, COUNT(*) as total,sum(a.pay_amount) as amount FROM deposit_order a left join members b on a.member_id=b.id WHERE a.status = "1" GROUP BY a.member_id HAVING COUNT(*) > 0 limit 0,10) as a order by total DESC'
     let dataList = query(sql)
@@ -90,6 +155,12 @@ function topDepositMembers(data) {
 function topDepositToday(data) {
     today = moment().format('YYYY-MM-DD');
     let sql = 'select * from (SELECT a.member_id,b.account, COUNT(*) as total,sum(a.pay_amount) as amount FROM deposit_order a left join members b on a.member_id=b.id WHERE a.status = "1" and a.Createtime between "'+today+' 00:00:00" and "'+today+' 23:59:59" GROUP BY a.member_id HAVING COUNT(*) > 0 limit 0,10) as a order by total DESC'
+    let dataList = query(sql)
+    return dataList
+}
+function recentRegisterMember(data){
+    today = moment().format('YYYY-MM-DD');
+    let sql = 'SELECT count(*) as total from members where Createtime between "'+today+' 00:00:00" and "'+today+' 23:59:59" GROUP BY a.member_id HAVING COUNT(*) > 0 limit 0,10) as a order by total DESC'
     let dataList = query(sql)
     return dataList
 }
@@ -142,24 +213,5 @@ function countProfitDepositAmount(data) {
     let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
     return dataList
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 module.exports = backendReportController;

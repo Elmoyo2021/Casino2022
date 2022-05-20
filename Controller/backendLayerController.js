@@ -72,23 +72,23 @@ const leyerController = {
             });
         }
         const layerDirectlyLists = await layerDirectlyList(req.query.id)//呼叫會員列表 傳入排序分頁等設定
-        let layerDirectlyRt=[]
-        let layerDirectly=[]
-        let amounts=""
-        let get_bonus=""
-        let bet_effective_amounts=""
-        for (i=0;i<layerDirectlyLists.length;i++){
-            amounts=await MembersAmount(layerDirectlyLists[i].id)
-            bet_effective_amounts=await MembersBetEffective(layerDirectlyLists[i].id)
-            layerDirectly={
-                account:layerDirectlyLists[i].account,
-                name:layerDirectlyLists[i].name,
-                tags_title:layerDirectlyLists[i].tags_title,
-                register_ip:layerDirectlyLists[i].Createtime,
-                amount:amounts[0].amount,
-                bet_effective_amount:bet_effective_amounts[0].amount,
-                get_bonus:get_bonus,
-                status:layerDirectlyLists[i].status
+        let layerDirectlyRt = []
+        let layerDirectly = []
+        let amounts = ""
+        let get_bonus = ""
+        let bet_effective_amounts = ""
+        for (i = 0; i < layerDirectlyLists.length; i++) {
+            amounts = await MembersAmount(layerDirectlyLists[i].id)
+            bet_effective_amounts = await MembersBetEffective(layerDirectlyLists[i].id)
+            layerDirectly = {
+                account: layerDirectlyLists[i].account,
+                name: layerDirectlyLists[i].name,
+                tags_title: layerDirectlyLists[i].tags_title,
+                register_ip: layerDirectlyLists[i].Createtime,
+                amount: amounts[0].amount,
+                bet_effective_amount: bet_effective_amounts[0].amount,
+                get_bonus: get_bonus,
+                status: layerDirectlyLists[i].status
             }
             layerDirectlyRt.push(layerDirectly)
         }
@@ -175,7 +175,7 @@ function MembersAmount(data) {
 
 async function MembersBetEffective(data) {
     let sql = "select sum(bet_amount) as amount from bet_detail where member_id=? and status='finsh'"
-    let dataList =await query(sql, [data])
+    let dataList = await query(sql, [data])
     return dataList
 }
 

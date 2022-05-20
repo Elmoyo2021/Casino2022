@@ -68,12 +68,12 @@ const backendMembersController = {
                 amount: walletLists[i].amount,
                 bonus_amount: walletLists[i].bonus_amount
             }
-            if(walletLists[i].title=='Main'){
-                walletListsJs.remit=Number(walletListWithdraws[0].amount)
-                walletListsJs.available_amount=available_amount
-            }else{
-                walletListsJs.remit=0
-                walletListsJs.available_amount=walletLists[i].amount
+            if (walletLists[i].title == 'Main') {
+                walletListsJs.remit = Number(walletListWithdraws[0].amount)
+                walletListsJs.available_amount = available_amount
+            } else {
+                walletListsJs.remit = 0
+                walletListsJs.available_amount = walletLists[i].amount
             }
             walletListsFinRt.push(walletListsJs)
         }
@@ -311,7 +311,7 @@ const backendMembersController = {
     },
     teamList: async (req, res) => {//會員代理團隊修改
         const AgencyLists = await SelectAgencyTeam()
-        
+
         return res.json({//回傳成功
             code: 200,
             msg: "查詢成功",
@@ -416,7 +416,7 @@ const backendMembersController = {
                 country: req.body.country,
                 city: req.body.city,
                 birthday: req.body.birthday,
-                group_id: req.body.group_id,
+                hierarchy_detail_id: req.body.hierarchy_detail_id,
                 register_ip: ip,
                 ip: ip
             }
@@ -899,70 +899,70 @@ const backendMembersController = {
             });
         }
     },
-    
+
     groupDetail_info: async (req, res) => {//層級細節
-        const groupDetailInfos =await groupDetailInfo(req.query.id) 
-        const groupInfos=await groupInfo(groupDetailInfos[0].group_id) 
-        const memberCounts=await memberGroupCount(req.query.id) 
+        const groupDetailInfos = await groupDetailInfo(req.query.id)
+        const groupInfos = await groupInfo(groupDetailInfos[0].group_id)
+        const memberCounts = await memberGroupCount(req.query.id)
 
-        
-        const deposit_banks=await Select_deposit_bank(req.query.id)
-        let deposit_banksBox=""
-        for(i=0;i<deposit_banks.length;i++){
-            deposit_banksBox=deposit_banksBox+","+deposit_banks[i].bank
+
+        const deposit_banks = await Select_deposit_bank(req.query.id)
+        let deposit_banksBox = ""
+        for (i = 0; i < deposit_banks.length; i++) {
+            deposit_banksBox = deposit_banksBox + "," + deposit_banks[i].bank
         }
-        deposit_banksBox=deposit_banksBox.substr(1);//去除第一個逗號
+        deposit_banksBox = deposit_banksBox.substr(1);//去除第一個逗號
 
-        const deposit_thirds=await deposit_third(req.query.id)
-        let deposit_thirdBox=""
-        for(i=0;i<deposit_thirds.length;i++){
-            deposit_thirdBox=deposit_thirdBox+","+deposit_thirds[i].bank
+        const deposit_thirds = await deposit_third(req.query.id)
+        let deposit_thirdBox = ""
+        for (i = 0; i < deposit_thirds.length; i++) {
+            deposit_thirdBox = deposit_thirdBox + "," + deposit_thirds[i].bank
         }
-        deposit_thirdBox=deposit_thirdBox.substr(1);//去除第一個逗號
+        deposit_thirdBox = deposit_thirdBox.substr(1);//去除第一個逗號
 
-        
-        const deposit_payments=await deposit_payment(req.query.id)
+
+        const deposit_payments = await deposit_payment(req.query.id)
         console.log(deposit_payments)
-        let deposit_paymentBox=""
-        for(i=0;i<deposit_payments.length;i++){
-            deposit_paymentBox=deposit_paymentBox+","+deposit_payments[i].title
+        let deposit_paymentBox = ""
+        for (i = 0; i < deposit_payments.length; i++) {
+            deposit_paymentBox = deposit_paymentBox + "," + deposit_payments[i].title
         }
-        deposit_paymentBox=deposit_paymentBox.substr(1);//去除第一個逗號
-        let groupInfoBox={
-            gruop_name:groupDetailInfos[0].name,
-            currency:groupInfos[0].currency,
-            members:memberCounts[0].total,
-            status:groupInfos[0].status,
+        deposit_paymentBox = deposit_paymentBox.substr(1);//去除第一個逗號
+        let groupInfoBox = {
+            gruop_name: groupDetailInfos[0].name,
+            currency: groupInfos[0].currency,
+            members: memberCounts[0].total,
+            status: groupInfos[0].status,
         }
-        let updateConditionBox={
-            upgrade_deposit:groupDetailInfos[0].upgrade_deposit,
-            upgrade_bet:groupDetailInfos[0].upgrade_bet,
-            reserve_deposit:groupDetailInfos[0].reserve_deposit,
-            reserve_bet:groupDetailInfos[0].reserve_bet,
+        let updateConditionBox = {
+            upgrade_deposit: groupDetailInfos[0].upgrade_deposit,
+            upgrade_bet: groupDetailInfos[0].upgrade_bet,
+            reserve_deposit: groupDetailInfos[0].reserve_deposit,
+            reserve_bet: groupDetailInfos[0].reserve_bet,
         }
-        let depositAccountbox={
-            deposit_bank:deposit_banksBox,
-            deposit_third:deposit_thirdBox,
-            deposit_payment:deposit_paymentBox
+        let depositAccountbox = {
+            deposit_bank: deposit_banksBox,
+            deposit_third: deposit_thirdBox,
+            deposit_payment: deposit_paymentBox
         }
-        let depositWithdrawalLimitBox={
-            deposit_min:groupDetailInfos[0].deposit_min,
-            deposit_max:groupDetailInfos[0].deposit_max,
-            withdraw_min:groupDetailInfos[0].withdraw_min,
-            withdraw_max:groupDetailInfos[0].withdraw_max,
-            withdraw_max_day:groupDetailInfos[0].withdraw_max_day,
-            withdraw_remind_day:groupDetailInfos[0].withdraw_remind_day,
-            fee:"1%",
-            administrativeFee:"1.00"
+        let depositWithdrawalLimitBox = {
+            deposit_min: groupDetailInfos[0].deposit_min,
+            deposit_max: groupDetailInfos[0].deposit_max,
+            withdraw_min: groupDetailInfos[0].withdraw_min,
+            withdraw_max: groupDetailInfos[0].withdraw_max,
+            withdraw_max_day: groupDetailInfos[0].withdraw_max_day,
+            withdraw_remind_day: groupDetailInfos[0].withdraw_remind_day,
+            fee: "1%",
+            administrativeFee: "1.00"
         }
         return res.json({//回傳成功
             code: 200,
             msg: "回傳成功",
             data: {
-                groupInfo:groupInfoBox,
-                updateCondition:updateConditionBox,
-                depositAccount:depositAccountbox,
-                depositWithdrawalLimit:depositWithdrawalLimitBox
+                groupInfo: groupInfoBox,
+                updateCondition: updateConditionBox,
+                depositAccount: depositAccountbox,
+                depositWithdrawalLimit: depositWithdrawalLimitBox
             }
         });
     },
@@ -1649,20 +1649,20 @@ function memberGroupCount(data) {//找尋組別會員數量
 }
 
 function Select_deposit_bank(data) {//收款銀行
-    let sql = "select bank from finance_account where vip_level like '%,"+data+",%' and bank_type='銀行'"
+    let sql = "select bank from finance_account where vip_level like '%," + data + ",%' and bank_type='銀行'"
     let dataList = query(sql)
     return dataList
 }
 
 function deposit_third(data) {//收款銀行
-    let sql = "select bank from finance_account where vip_level like '%,"+data+",%' and bank_type!='銀行'"
+    let sql = "select bank from finance_account where vip_level like '%," + data + ",%' and bank_type!='銀行'"
     let dataList = query(sql)
     return dataList
 }
 
 function deposit_payment(data) {//出款
     let sql = "select title from third_platform where hierarchy_detail_id=?"
-    let dataList = query(sql,[data])
+    let dataList = query(sql, [data])
     return dataList
 }
 

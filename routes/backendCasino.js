@@ -19,5 +19,5 @@ const upload = multer({ storage: storage })
 
 //router.post('/advertiseFloat', backendMemberPageskController.advertiseFloat);//浮動廣告管理 新增
 
-router.get('/gameList', backendMemberPageskController.gameList);//會員站內信管理
+router.get('/gameList', backendMemberPageskController.gameList);//管理
 module.exports = router;

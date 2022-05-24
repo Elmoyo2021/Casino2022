@@ -22,6 +22,8 @@ var backendLayerRouter = require('./routes/backendLayer');
 var backendCasinoRouter = require('./routes/backendCasino');
 var backendReportRouter = require('./routes/backendReport');
 var backendPageRouter = require('./routes/backendPage');
+var backendRebateRouter = require('./routes/backendRebate');
+
 var MembersRouter = require('./routes/Members');
 
 
@@ -96,6 +98,7 @@ app.use('/backend/management', backendManagementRouter);
 app.use('/backend/layer', backendLayerRouter);
 app.use('/backend/casino', backendCasinoRouter);
 app.use('/backend/report', backendReportRouter);
+app.use('/backend/rebate', backendRebateRouter);
 app.use('/backend/page', backendPageRouter);
 
 /* 有加判斷登入

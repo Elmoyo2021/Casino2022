@@ -15,7 +15,7 @@ const backendCasinoController = {
                 data: error_msg
             });
         } else {
-            const selectGameLists = await selectGameList()//呼叫快捷列表
+            const selectGameLists = await selectGameList()//呼叫列表
             return res.json({//回傳成功
                 code: 200,
                 msg: "回傳成功",

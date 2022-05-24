@@ -4,82 +4,12 @@ var geoip = require('geoip-lite');
 var moment = require('moment'); // require
 
 const backendReportController = {
-    topDeposit: async (req, res) => {//前10大存款列表列表
-        const topDeposits = await topDepositMembers()//前10大存款
+    rebateSet: async (req, res) => {//反水設置列表
+        const rebateSetLists = await rebateSetList()//前10大存款
         return res.json({//回傳成功
             code: 200,
             msg: "回傳成功",
-            data: topDeposits
-        });
-
-    },
-    recentWithdrawal: async (req, res) => {//過去7日取款列表
-        const topWithdrawals = await topWithdrawalMembers()//過去7日取款列表
-        var finalRt = []
-        for (i = 0; i <= 7; i++) {
-            nextday = moment().add(-i, 'days').format('YYYY-MM-DD');
-            //members = await countGameMember(nextday)
-            amounts = await countAmountWithdrawal(nextday)
-            totals = await countWithdrawal(nextday)
-            avg=Number(amounts[0].total)/Number(totals[0].total)
-            AddData = {
-                date: nextday,
-                amount: amounts[0].total,
-                total: totals[0].total,
-                average: avg
-            }
-            finalRt.push(AddData)
-        }
-        return res.json({//回傳成功
-            code: 200,
-            msg: "回傳成功",
-            data: finalRt
-        });
-
-    },
-    topDepositToday: async (req, res) => {//今日存款列表
-        const topDepositTodays = await topDepositToday()//今日存款列表
-        return res.json({//回傳成功
-
-            code: 200,
-            msg: "回傳成功",
-            data: topDepositTodays
-        });
-
-    },
-    recentRegister: async (req, res) => {//進7日註冊會員
-        const topWithdrawals = await topWithdrawalMembers()//印日取款列表
-        var finalRt = []
-        for (i = 0; i <= 7; i++) {
-            nextday = moment().add(-i, 'days').format('YYYY-MM-DD');
-            //members = await countGameMember(nextday)
-            registerTotal = await countRegister(nextday)
-            depositTotals = await countRegisterDeposit(nextday)
-            AddData = {
-                date: nextday,
-                registerTotal: registerTotal[0].total,
-                depositTotal: depositTotals[0].total
-            }
-            finalRt.push(AddData)
-        }
-        return res.json({//回傳成功
-            code: 200,
-            msg: "回傳成功",
-            data: finalRt
-        });
-    },
-    pageTopData: async (req, res) => {//上方數據
-        today = moment().format('YYYY-MM-DD');
-        const totalProfits= await countProfitToday(today)
-        firstDay = moment().add(-7,'days').format('YYYY-MM-DD');
-        const recentRegisterMembers= await countRegisterTopData(firstDay,today)
-        return res.json({//回傳成功
-            code: 200,
-            msg: "回傳成功",
-            data:{
-                totalProfit:totalProfits[0].total,
-                recentRegisterMember:recentRegisterMembers[0].total,
-            }
+            data: rebateSetLists
         });
 
     }
@@ -125,9 +55,9 @@ function pagination(data) {//分頁設定
 }
 
 
-function countProfitToday(data) {
-    let sql = 'select sum(profit) as total from baccarat_bet where status="finish" and Createtime BETWEEN ? AND ?'
-    let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
+function rebateSetList(data) {
+    let sql = 'select * from rebat_set order by id ASC'
+    let dataList = query(sql)
     return dataList
 }
 function countRegisterTopData(firstDay,today) {

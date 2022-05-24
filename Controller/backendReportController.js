@@ -71,10 +71,10 @@ const backendReportController = {
         for (i = 31; i >= 0; i--) {
             nextday = moment().add(-i, 'days').format('YYYY-MM-DD');
             members = await countGameMember(nextday)
-            if(members.length>0){
-                members=members[0].total
-            }else{
-                members=0
+            if (members.length > 0) {
+                members = members[0].total
+            } else {
+                members = 0
             }
             betCount = await countGameBet(nextday)
             betAmount = await countGameBetAmount(nextday)
@@ -105,7 +105,7 @@ const backendReportController = {
             members = await countRegisterMember(nextday)
             depositTotals = await countProfitDeposit(nextday)
             depositAmounts = await countProfitDepositAmount(nextday)
-            
+
             withdrawalTotals = await countProfitWithdrawal(nextday)
             withdrawalAmounts = await ProfitWithdrawalAmount(nextday)
             betAmounts = await profitBetAmounts(nextday)
@@ -177,22 +177,22 @@ function pagination(data) {//分頁設定
 
 
 function countGameMember(data) {
-    let sql = 'select count(*) as total from `baccarat_bet` where sdate BETWEEN ? AND ? group by member_id'
+    let sql = 'select count(*) as total from `baccarat_bet` where Createtime BETWEEN ? AND ? group by member_id'
     let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
     return dataList
 }
 function countGameBet(data) {
-    let sql = 'select count(*) as total from `baccarat_bet` where sdate BETWEEN ? AND ?'
+    let sql = 'select count(*) as total from `baccarat_bet` where Createtime BETWEEN ? AND ?'
     let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
     return dataList
 }
 function countGameBetAmount(data) {
-    let sql = 'select sum(bet_amount) as total from `baccarat_bet` where sdate BETWEEN ? AND ?'
+    let sql = 'select sum(bet_amount) as total from `baccarat_bet` where Createtime BETWEEN ? AND ?'
     let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
     return dataList
 }
 function countGameBetProfit(data) {
-    let sql = 'select sum(profit) as total from `baccarat_bet` where sdate BETWEEN ? AND ?'
+    let sql = 'select sum(profit) as total from `baccarat_bet` where Createtime BETWEEN ? AND ?'
     let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
     return dataList
 }
@@ -203,12 +203,12 @@ function countRegisterMember(data) {
     return dataList
 }
 function profitBetAmounts(data) {
-    let sql = 'select sum(bet_amount) as total from `baccarat_bet` where status="finish" and sdate BETWEEN ? AND ?'
+    let sql = 'select sum(bet_amount) as total from `baccarat_bet` where status="finish" and Createtime BETWEEN ? AND ?'
     let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
     return dataList
 }
 function profitBetProfits(data) {
-    let sql = 'select sum(profit) as total from `baccarat_bet` where status="finish" and sdate BETWEEN ? AND ?'
+    let sql = 'select sum(profit) as total from `baccarat_bet` where status="finish" and Createtime BETWEEN ? AND ?'
     let dataList = query(sql, [data + " 00:00:00", data + " 23:59:59"])
     return dataList
 }
@@ -279,7 +279,7 @@ function countProfits(data) {//
 
 
 function betHistoryList(data) {//有效投注列表
-    let sql = "select a.sdate,a.finishtime,a.order_id,a.game_id,d.name as game_name,e.name as systeam,c.name as hierarchy,b.teacher_id,b.account,a.bet_amount,a.bet_amount,a.profit from baccarat_bet a left join members b on a.member_id=b.id  left join hierarchy_detail c on b.hierarchy_detail_id=c.id left join game_list d on a.game=d.id left join game_system e on d.game_system_id=e.id order by a." + data.orderBy + " " + data.order + " limit ?,?"
+    let sql = "select a.Createtime,a.finishtime,a.order_id,a.game_id,d.name as game_name,e.name as systeam,c.name as hierarchy,b.teacher_id,b.account,a.bet_amount,a.bet_amount,a.profit from baccarat_bet a left join members b on a.member_id=b.id  left join hierarchy_detail c on b.hierarchy_detail_id=c.id left join game_list d on a.game=d.id left join game_system e on d.game_system_id=e.id order by a." + data.orderBy + " " + data.order + " limit ?,?"
     let dataList = query(sql, [Number(data.skip), Number(data.limit)])
     return dataList
 }

@@ -12,7 +12,7 @@ var MySQLStore = require('express-mysql-session')(session);
 
 
 var indexRouter = require('./routes/index');
-var backendMembersRouter = require('./routes/backendMembers');//ACCESS
+var backendMembersRouter = require('./routes/backendMembers');//
 var backendFinanceRouter = require('./routes/backendFinance');
 var backendAgencyRouter = require('./routes/backendAgency');
 var backendRiskRouter = require('./routes/backendRisk');

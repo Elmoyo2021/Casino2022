@@ -8,6 +8,9 @@ router.get('/agencyList', backendAgencyController.agencyList);//代理團隊
 router.post('/agencyList_add', backendAgencyController.agencyListAdd);//代理團隊
 router.post('/agencyListMember_add', backendAgencyController.agencyListMemberAdd);//代理團隊
 
+
+router.get('/agencyDetail', backendAgencyController.agencyDetail);//代理團隊_下級列表
+
 router.post('/agencyList_update', backendAgencyController.agencyListUpdate);//代理團隊
 router.post('/agencyList_updatePoint', backendAgencyController.agencyListUpdatePoint);//代理團隊
 router.post('/agencyList_updateStatus', backendAgencyController.agencyListUpdateStatus);//代理團隊

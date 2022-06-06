@@ -36,7 +36,10 @@ router.post('/depositInfoUpdate', [
     check('title_en', '標題(英文)必須填寫')
         .isLength({ min: 1 }),
 ], backendFinanceController.depositInfoUpdate);//存款方式設定
-router.get('/depositPages', backendFinanceController.depositPages);//存款頁面設定
+router.get('/depositPages',[
+    check('category', 'bank必須填寫')
+        .isLength({ min: 1 }),
+],  backendFinanceController.depositPages);//存款頁面設定
 router.post('/depositPagesUpdate', backendFinanceController.depositPagesUpdate);//存款頁面設定
 
 
@@ -80,6 +83,7 @@ router.post('/bankListUpdate',upload.single('img'), [//銀行列表 更新
     check('url', '網銀網址必須填寫')
         .isLength({ min: 1 }),
 ], backendFinanceController.bankListUpdate);
+router.get('/thirdPlatformSearch', backendFinanceController.thirdPlatformSearch);//第三方平台搜尋
 router.get('/thirdPlatform', backendFinanceController.thirdPlatform);//第三方平台
 router.post('/third_platformAdd', [//第三方平台 新增
     check('title', '銀行類型必須填寫')

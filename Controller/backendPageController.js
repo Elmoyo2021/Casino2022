@@ -73,12 +73,14 @@ const backendReportController = {
         const totalProfits= await countProfitToday(today)
         firstDay = moment().add(-7,'days').format('YYYY-MM-DD');
         const recentRegisterMembers= await countRegisterTopData(firstDay,today)
+        const allMembers=await countAllMember()
         return res.json({//回傳成功
             code: 200,
             msg: "回傳成功",
             data:{
                 totalProfit:totalProfits[0].total,
                 recentRegisterMember:recentRegisterMembers[0].total,
+                allMember:allMembers[0].total,
             }
         });
 
@@ -123,7 +125,11 @@ function pagination(data) {//分頁設定
     }
     return conditionData
 }
-
+function countAllMember(){
+    let sql = 'select count(*) as total from members '
+    let dataList = query(sql)
+    return dataList
+}
 
 function countProfitToday(data) {
     let sql = 'select sum(profit) as total from baccarat_bet where status="finish" and Createtime BETWEEN ? AND ?'

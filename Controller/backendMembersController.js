@@ -1,24 +1,64 @@
 const { query } = require('../async-db')
 const { check, validationResult } = require('express-validator')
+const membersModel = require('../Models/membersModel');
+memberFunction = new membersModel();
+
+const public = require('../Models/public');//共用function
+publics = new public();
+
+const _ = require("lodash");
 var moment = require('moment'); // require
 const fs = require('fs')
 
 //const ImgPath = "http://167.179.74.47:4000/membersImages/"
 const ImgPath = ""
 const backendMembersController = {
+    memberTest: async (req, res) => {//測試
+        const mData = {
+            account: "user001",
+            pwd: "Frog0001"
+        }
+        const memberChecks = await memberFunction.memberCheck(mData);
+        return res.json({//回傳成功
+            code: 200,
+            msg: "回傳成功",
+            data: memberChecks
+        })
+    },
     membersList: async (req, res) => {//會員列表
-        const conditionData = pagination(req) //分頁設定
+        //MembersModel
+        const conditionData = publics.pagination(req) //分頁設定
         const members = await MemberList(conditionData)//呼叫會員列表 傳入排序分頁等設定
         const membersTotal = await MemberListTotal()//資料總筆數
         const total = Math.ceil(Number(membersTotal[0].total) / Number(conditionData.limit))//最大頁數
         var walletDatas = []
-        let amounts = 0, deposit = 0, deposit_total = 0, withdraw = 0, withdraw_total = 0
+        const wallet = []
         for (i = 0; i < members.length; i++) {
-            amounts = await MembersAmount(members[i].id)
-            deposit = await MembersDeposit(members[i].id)
-            deposit_total = await MembersDepositTotal(members[i].id)
-            withdraw = await MembersWithdraw(members[i].id)
-            withdraw_total = await MembersWithdrawTotal(members[i].id)
+            wallet.push(members[i].id)
+        }
+        console.log("Wallet=",wallet)
+        membersWalletAmounts = await MembersWalletAmount(wallet)
+        membersWalletAmounts = JSON.parse(JSON.stringify(membersWalletAmounts));
+        depositTotals = await MembersWalletDeposit(wallet)
+        depositTotals = JSON.parse(JSON.stringify(depositTotals));
+        countDeposits = await MembersWalletDepositCount(wallet)
+        countDeposits = JSON.parse(JSON.stringify(countDeposits));
+        withdrawTotals = await MembersWalletWithdraw(wallet)
+        withdrawTotals = JSON.parse(JSON.stringify(withdrawTotals));
+        countWithdraws = await MembersWalletWithdrawCount(wallet)
+        countWithdraws = JSON.parse(JSON.stringify(countWithdraws));
+        for (i = 0; i < members.length; i++) {
+            thisAmount = _.find(membersWalletAmounts, { "member_id": members[i].id.toString() });//會員餘額
+            console.log(i,"/",thisAmount)
+            thisDepositTotal = _.find(depositTotals, { "member_id": members[i].id.toString() });//會員存款金額
+            if (thisDepositTotal == null) { depositAmount = 0 } else { depositAmount = thisDepositTotal.amount }
+            thisDepositCount = _.find(countDeposits, { "member_id": members[i].id.toString() });//會員存款次數
+            if (thisDepositCount == null) { depositCount = 0 } else { depositCount = thisDepositCount.total }
+            withdrawTotals = _.find(depositTotals, { "member_id": members[i].id.toString() });//會員提款金額
+            if (withdrawTotals == null) { withdrawAmount = 0 } else { withdrawAmount = withdrawTotals.amount }
+            countWithdraws = _.find(countDeposits, { "member_id": members[i].id.toString() });//會員提款次數
+            if (countWithdraws == null) { withdrawCount = 0 } else { withdrawCount = countWithdraws.total }
+
             walletData = {
                 id: members[i].id,
                 account: members[i].account,
@@ -36,14 +76,15 @@ const backendMembersController = {
                 city: members[i].city,
                 bank_account: members[i].bank_account,
                 Createtime: members[i].Createtime,
-                amount: amounts[0].amount,
-                deposit: deposit[0].amount,//總存款
-                deposit_total: deposit_total[0].total,//存款數
-                withdraw: withdraw[0].amount,//提款
-                withdraw_total: withdraw_total[0].total,//提款數
+                amount: thisAmount.amount,
+                deposit: depositAmount,//總存款
+                deposit_total: depositCount,//存款數
+                withdraw: withdrawAmount,//提款
+                withdraw_total: withdrawCount,//提款數
             }
             walletDatas.push(walletData)
         }
+
         return res.json({//回傳成功
             code: 200,
             msg: "回傳成功",
@@ -1352,16 +1393,6 @@ function teacherData(data) {//會員列表
     return dataList
 }
 
-
-
-
-
-function MList(data) {//會員錢包列表
-    let sql = "SELECT a.id,a.account,b.title FROM members a left join members_wallet b on a.id=b.member_id where title is null order by a.id ASC "
-    let dataList = query(sql)
-    return dataList
-}
-
 function walletList(data) {//會員錢包列表
     let sql = "select * from members_wallet where member_id=?"
     let dataList = query(sql, [data])
@@ -1407,41 +1438,42 @@ function membersPic2(data, data2) {//會員PIC2更新
 }
 function MemberList(data) {//會員列表
     let sql = "select a.id,a.account,a.name,b.name as group_title,a.currency,c.title tagsTitle,a.agency_team_id,a.teacher_code,a.email,a.phone,a.sms_check,a.IM1,a.IM2,a.city,a.bank_account,a.Createtime from members as a left join hierarchy_detail as b on a.hierarchy_detail_id=b.id left join tags as c on a.tags=c.id  order by a." + data.orderBy + " " + data.order + " limit ?,?"
-    //let sql = "select a.id,a.account,a.name,b.name as group_title,a.currency,c.title tagsTitle,a.agency_team,a.teacher_code,a.email,a.phone,a.sms_check,a.IM1,a.IM2,a.city,a.bank_account,a.Createtime,d.amount from members as a left join hierarchy_detail as b on a.group_id=b.id left join tags as c on a.tags=c.id left join (select id,member_id,sum(amount) as amount from members_wallet group by member_id) as d on a.account=d.member_id  order by a." + data.orderBy + " " + data.order + " limit ?,?"
     let dataList = query(sql, [Number(data.skip), Number(data.limit)])
     return dataList
 }
-
 function MemberListTotal() {//會員列表總數
     let sql = 'SELECT count(*) as total FROM `members` '
     let dataList = query(sql)
     return dataList
 }
-function MembersAmount(data) {
-    let sql = "select id,member_id,sum(amount) as amount from members_wallet where member_id=?"
+
+function MembersWalletAmount(data) {
+    let sql = "SELECT member_id,SUM(amount) as amount FROM members_wallet WHERE `member_id` IN (?) Group By member_id order by id ASC"
     let dataList = query(sql, [data])
     return dataList
 }
-function MembersDeposit(data) {
-    let sql = "select id,member_id,sum(amount) as amount from members_wallet_log where member_id=? and type='deposit'"
+function MembersWalletDeposit(data) {
+    let sql = "SELECT member_id,SUM(amount) as amount FROM members_wallet_log WHERE `member_id` IN (?) and type='deposit' Group By member_id order by id ASC"
     let dataList = query(sql, [data])
     return dataList
 }
-function MembersDepositTotal(data) {
-    let sql = "select count(*) as total from members_wallet_log where member_id=? and type='deposit'"
+function MembersWalletDepositCount(data) {
+    let sql = "SELECT member_id,count(*) as total FROM members_wallet_log WHERE `member_id` IN (?) and type='deposit' Group By member_id order by id ASC"
     let dataList = query(sql, [data])
     return dataList
 }
-function MembersWithdraw(data) {
-    let sql = "select id,member_id,sum(amount) as amount from members_wallet_log where member_id=? and type='withdraw'"
+
+function MembersWalletWithdraw(data) {
+    let sql = "SELECT member_id,SUM(amount) as amount FROM members_wallet_log WHERE `member_id` IN (?) and type='withdraw' Group By member_id order by id ASC"
     let dataList = query(sql, [data])
     return dataList
 }
-function MembersWithdrawTotal(data) {
-    let sql = "select count(*) as total from members_wallet_log where member_id=? and type='withdraw'"
+function MembersWalletWithdrawCount(data) {
+    let sql = "SELECT member_id,count(*) as total FROM members_wallet_log WHERE `member_id` IN (?) and type='withdraw' Group By member_id order by id ASC"
     let dataList = query(sql, [data])
     return dataList
 }
+
 
 function MemberInsert(data) {//寫入MEMBERS資料庫
     let sql = 'INSERT INTO members SET ?'

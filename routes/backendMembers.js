@@ -18,6 +18,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 
+router.get('/memberTest', backendMembersController.memberTest);//會員列表查詢
 router.get('/members', backendMembersController.membersList);//會員列表查詢
 router.get('/members_data', backendMembersController.membersData);//會員列表查詢
 router.get('/members_state', backendMembersController.membersSate);//會員在線狀態

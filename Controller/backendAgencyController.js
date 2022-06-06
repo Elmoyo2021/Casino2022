@@ -56,6 +56,53 @@ const AgencyController = {
         }//檢查是否正確欄位填寫END
 
     },
+    agencyDetail: async (req, res) => {//代理團隊_下級列表
+        const Agencys = await checkAgencyId(req.query.id)
+        let agencyRt = {}
+            layer = await countLayer(req.query.id)
+            members = await countMembers(req.query.id)
+            agencyRt={
+                account:Agencys[0].account,
+                rank:Agencys[0].rank,
+                name:Agencys[0].name,
+                settlement:Agencys[0].settlement,
+                Createtime:Agencys[0].Createtime,
+                agencyTotal:layer[0].total,
+                memberTotal:members[0].total,
+                point:Agencys[0].point,
+                status:Agencys[0].statusAgencys,
+                Updatetime:Agencys[0].Updatetime
+            }
+        const AgencyLowers = await checkAgencyLower(req.query.id)
+        let AgencyLowersRt = []
+        let agencyInsert = {}
+        for (i = 0; i < AgencyLowers.length; i++) {
+            layer = await countLayer(AgencyLowers[i].id)
+            members = await countMembers(AgencyLowers[i].id)
+            agencyInsert={
+                account:AgencyLowers[i].account,
+                rank:AgencyLowers[i].rank,
+                name:AgencyLowers[i].name,
+                settlement:AgencyLowers[i].settlement,
+                Createtime:AgencyLowers[i].Createtime,
+                agencyTotal:layer[i].total,
+                memberTotal:members[i].total,
+                point:AgencyLowers[i].point,
+                status:AgencyLowers[i].statusAgencys,
+                Updatetime:AgencyLowers[i].Updatetime
+            }
+            AgencyLowersRt.push(agencyInsert)
+        }
+
+        return res.json({//回傳成功
+            code: 200,
+            msg: "成功",
+            data: {
+                agency: agencyRt,
+                lower_list: AgencyLowersRt
+            }
+        });
+    },
     agencyListMemberAdd: async (req, res) => {//代理團隊 新增會員
 
         const Members = await checkMembers(req.body.account)//寫入資料庫
@@ -75,15 +122,9 @@ const AgencyController = {
                 data: error_msg
             });
         } else {
-            const Data = {//代理 或 會員 資料
-                rank: req.body.rank,
-                account: req.body.account,
-                name: req.body.name,
-                pwd: req.body.pwd,
-                hierarchy_detail_id: req.body.hierarchy_detail_id,//會員層級
-                phone: req.body.phone,
-            }
-            const agencyAdd = await agencyMemberInsert(Data)//寫入資料庫
+            
+            const InsertData=req.body
+            const agencyAdd = await agencyMemberInsert(InsertData)//寫入資料庫
             const agencyMemberRts = await agencyMemberRt(agencyAdd.insertId)
 
             return res.json({//回傳成功
@@ -127,30 +168,9 @@ const AgencyController = {
                 data: error_msg
             });
         } else {
-            const Data = {
-                rank: req.body.rank,
-                name: req.body.name,
-                pwd: req.body.pwd,
-                hierarchy_detail_id: req.body.hierarchy_detail_id,
-                phone: req.body.phone,
-                remark: req.body.remark,
-                layer_id: req.body.layer_id,
-                settlement: req.body.settlement,
-                currency: req.body.currency,
-                acting_deposit: req.body.acting_deposit,
-                acting_other: req.body.acting_other,
-                acting_rebate: req.body.acting_rebate,
-                acting_bonus: req.body.acting_bonus,
-                acting_layer_bonus: req.body.acting_layer_bonus,
-                acting_platform_cost: req.body.acting_platform_cost,
-                proportion_cycle: req.body.proportion_cycle,
-                proportion_profit: req.body.proportion_profit,
-                proportion_efficient: req.body.proportion_efficient,
-                proportion_bet: req.body.proportion_bet,
-                proportion_deposit: req.body.proportion_deposit,
-                proportion_game: req.body.proportion_game
-            }
-            const agencyTeamAdd = await agencyTeamUpdate(Data, req.body.id)//寫入資料庫
+            const UpdateData=req.body
+            delete UpdateData.id
+            const agencyTeamAdd = await agencyTeamUpdate(UpdateData, req.body.id)//寫入資料庫
             const agencyTeamRt = await agencyTeamInsertRt(req.body.id)//回傳成功表
 
             return res.json({//回傳成功
@@ -313,9 +333,9 @@ const AgencyController = {
             profits = await countProfit(agencyLists[i].id)
             betAmounts = await countBetAmounts(agencyLists[i].id)
             betProfits = await countProfits(agencyLists[i].id)
-            var accounteds=0,totals=0
-            accounteds=Number(betProfits[0].total)*0.1
-            totals=accounteds
+            var accounteds = 0, totals = 0
+            accounteds = Number(betProfits[0].total) * 0.1
+            totals = accounteds
             agencyListInsert = {
                 account: agencyLists[i].account,
                 rank: agencyLists[i].rank,
@@ -324,9 +344,9 @@ const AgencyController = {
                 bet_amount: betAmounts[0].total,
                 bet_amount_efficient: betProfits[0].total,
                 profit: profits[0].total,
-                accounted:accounteds,
-                layer_bonus:0,
-                total:totals,
+                accounted: accounteds,
+                layer_bonus: 0,
+                total: totals,
             }
             finalRt.push(agencyListInsert)
             //console.log(agencyLists[i].account)
@@ -471,6 +491,17 @@ function pagination(data) {//分頁設定
 }
 
 
+
+function checkAgencyId(data) {//代理團隊列表
+    let sql = 'SELECT account,rank,name,settlement,Createtime,point,status,Updatetime FROM `agency_team` where id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
+function checkAgencyLower(data) {//代理團隊列表_下級
+    let sql = 'SELECT * FROM `agency_team` where layer_id=?'
+    let dataList = query(sql, [data])
+    return dataList
+}
 function agencyList(data) {//代理團隊列表
     let sql = 'SELECT * FROM `agency_team` order by ' + data.orderBy + ' ' + data.order + ' limit ?,?'
     let dataList = query(sql, [Number(data.skip), Number(data.limit)])
